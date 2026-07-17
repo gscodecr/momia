@@ -1,9 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
 from sqlalchemy.orm import Session
 from typing import List
 
-import schemas, models, database
+import schemas, models, database, utils
 from auth import get_current_user
+from services import email_service
 import os
 import shutil
 import json
@@ -40,7 +41,7 @@ def get_all_payments(db: Session = Depends(database.get_db), current_user: model
     return db.query(models.Payment).order_by(models.Payment.id.desc()).all()
 
 @router.post("/{payment_id}/approve")
-def approve_payment(payment_id: int, db: Session = Depends(database.get_db), current_user: models.User = Depends(get_current_user)):
+def approve_payment(payment_id: int, background_tasks: BackgroundTasks, db: Session = Depends(database.get_db), current_user: models.User = Depends(get_current_user)):
     """Endpoint para que el Admin apruebe un comprobante"""
     payment = db.query(models.Payment).filter(models.Payment.id == payment_id).first()
     if not payment:
@@ -48,10 +49,18 @@ def approve_payment(payment_id: int, db: Session = Depends(database.get_db), cur
     
     payment.status = "APPROVED"
     db.commit()
+    
+    # Notify user
+    athlete = db.query(models.User).filter(models.User.id == payment.user_id).first()
+    if athlete:
+        utils.create_notification(db, user_id=athlete.id, title="Pago Aprobado", message=f"Tu pago por {payment.amount} ha sido aprobado.", notif_type="PAYMENT")
+        if athlete.email:
+            background_tasks.add_task(email_service.send_payment_status_email, to_email=athlete.email, user_name=athlete.first_name, amount=payment.amount, status="Aprobado")
+            
     return {"message": "Pago aprobado", "payment_id": payment.id}
 
 @router.post("/{payment_id}/reject")
-def reject_payment(payment_id: int, db: Session = Depends(database.get_db), current_user: models.User = Depends(get_current_user)):
+def reject_payment(payment_id: int, background_tasks: BackgroundTasks, db: Session = Depends(database.get_db), current_user: models.User = Depends(get_current_user)):
     """Endpoint para que el Admin rechace un comprobante"""
     if current_user.role.name != "admin":
         raise HTTPException(status_code=403, detail="No autorizado")
@@ -62,6 +71,14 @@ def reject_payment(payment_id: int, db: Session = Depends(database.get_db), curr
     
     payment.status = "REJECTED"
     db.commit()
+    
+    # Notify user
+    athlete = db.query(models.User).filter(models.User.id == payment.user_id).first()
+    if athlete:
+        utils.create_notification(db, user_id=athlete.id, title="Pago Rechazado", message=f"Tu pago por {payment.amount} ha sido rechazado.", notif_type="PAYMENT")
+        if athlete.email:
+            background_tasks.add_task(email_service.send_payment_status_email, to_email=athlete.email, user_name=athlete.first_name, amount=payment.amount, status="Rechazado")
+            
     return {"message": "Pago rechazado", "payment_id": payment.id}
 
 @router.post("/tilopay/init")

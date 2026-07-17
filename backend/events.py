@@ -1,9 +1,11 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
 from sqlalchemy.orm import Session
 from typing import List
 import models, schemas
 from database import get_db
 from auth import get_current_user
+import utils
+from services import email_service
 
 router = APIRouter(
     prefix="/events",
@@ -26,7 +28,7 @@ def create_event(event: schemas.EventCreate, db: Session = Depends(get_db), curr
     return new_event
 
 @router.post("/{event_id}/register", response_model=schemas.EventRegistrationOut)
-def register_for_event(event_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+def register_for_event(event_id: int, background_tasks: BackgroundTasks, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
     event = db.query(models.Event).filter(models.Event.id == event_id).first()
     if not event:
         raise HTTPException(status_code=404, detail="Evento no encontrado")
@@ -48,6 +50,12 @@ def register_for_event(event_id: int, db: Session = Depends(get_db), current_use
     db.add(reg)
     db.commit()
     db.refresh(reg)
+    
+    # Notify user
+    utils.create_notification(db, user_id=current_user.id, title="Registro Exitoso", message=f"Te has registrado al evento: {event.title}.", notif_type="EVENT")
+    if current_user.email:
+        background_tasks.add_task(email_service.send_event_registration_email, to_email=current_user.email, user_name=current_user.first_name, event_title=event.title)
+        
     return reg
 
 @router.get("/my_registrations", response_model=List[schemas.EventRegistrationOut])

@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { UserPlus, Shield, Activity, User, CheckCircle2, XCircle, Search } from 'lucide-react';
+import LogoLoader from '@/components/LogoLoader';
 
 interface Role {
   id: number;
@@ -217,8 +218,8 @@ export default function AdminUsers() {
       </div>
 
       {loading ? (
-        <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderColor: 'var(--primary)' }}></div>
+        <div className="flex-1 flex items-center justify-center min-h-screen">
+          <LogoLoader size={96} />
         </div>
       ) : (
         <div className="glass-card overflow-hidden">

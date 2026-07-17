@@ -207,7 +207,17 @@ export default function AthleteWorkouts() {
                 </h2>
                 <div className="flex items-center gap-1.5 text-sm opacity-70 mt-2">
                   <Clock size={16} />
-                  <span>{new Date(selectedWorkout.scheduled_date).toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+                  <span>
+                    {new Date(selectedWorkout.scheduled_date).toLocaleString('en-GB', {
+                      timeZone: 'America/Costa_Rica',
+                      day: '2-digit',
+                      month: '2-digit',
+                      year: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                      hour12: true
+                    }).replace(',', '')}
+                  </span>
                 </div>
               </div>
               <button onClick={() => setSelectedWorkout(null)} className="p-2 bg-white/5 hover:bg-white/10 rounded-full transition-colors shrink-0">

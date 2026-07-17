@@ -1,7 +1,8 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
-import { CreditCard, Download, Upload, CheckCircle, AlertCircle, RefreshCw, Send, Loader2 } from 'lucide-react';
+import { CreditCard, Download, Upload, CheckCircle, AlertCircle, RefreshCw, Send } from 'lucide-react';
 import toast from 'react-hot-toast';
+import LogoLoader from '@/components/LogoLoader';
 
 export default function AthleteBilling() {
   const [billingInfo, setBillingInfo] = useState<any>(null);
@@ -121,7 +122,7 @@ export default function AthleteBilling() {
   };
 
   if (loading) {
-    return <div className="flex items-center justify-center h-64"><Loader2 className="animate-spin text-[var(--primary)]" size={32} /></div>;
+    return <div className="flex items-center justify-center h-64"><LogoLoader size={96} /></div>;
   }
 
   const isUpToDate = billingInfo?.subscription_status === 'Activo';
@@ -214,7 +215,7 @@ export default function AthleteBilling() {
                 disabled={simulatingPayment}
                 className="w-full btn-primary flex items-center justify-center gap-2"
               >
-                {simulatingPayment ? <Loader2 size={18} className="animate-spin" /> : <CreditCard size={18} />}
+                {simulatingPayment ? <LogoLoader size={18} /> : <CreditCard size={18} />}
                 <span>Ir a Tilopay</span>
               </button>
 
@@ -272,7 +273,7 @@ export default function AthleteBilling() {
                   disabled={uploadingSinpe}
                   className="w-full btn-primary flex items-center justify-center gap-2 mt-4"
                 >
-                  {uploadingSinpe ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
+                  {uploadingSinpe ? <LogoLoader size={18} /> : <Send size={18} />}
                   <span>Enviar Comprobante</span>
                 </button>
               )}

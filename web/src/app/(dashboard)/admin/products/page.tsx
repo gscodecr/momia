@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { Plus, Package, Edit, Trash2, X, Upload, CheckCircle, ShoppingBag, Truck, User } from 'lucide-react';
+import { Plus, Package, Edit, Trash2, X, Upload, CheckCircle, CheckCircle2, ShoppingBag, Truck, User } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function AdminProducts() {

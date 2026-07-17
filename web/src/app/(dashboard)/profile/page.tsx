@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { User, Mail, Shield, Camera, Save, Activity, HeartPulse, Scale, Edit3, Trash2, Phone, Calendar, UserCircle, CreditCard, MapPin, Lock } from 'lucide-react';
 import toast from 'react-hot-toast';
+import LogoLoader from '@/components/LogoLoader';
 
 export default function ProfilePage() {
   const [role, setRole] = useState<string | null>(null);
@@ -258,7 +259,7 @@ export default function ProfilePage() {
           disabled={saving}
           className="btn-primary flex items-center gap-2 px-8 py-3 text-lg font-bold shadow-lg shadow-[var(--primary)]/20"
         >
-          {saving ? <div className="w-5 h-5 border-2 border-black/20 border-t-black rounded-full animate-spin" /> : <Save size={20} />}
+          {saving ? <LogoLoader size={20} /> : <Save size={20} />}
           <span>{saving ? 'Guardando...' : 'Guardar Cambios'}</span>
         </button>
       </div>
@@ -280,7 +281,9 @@ export default function ProfilePage() {
             >
               <div className="w-40 h-40 rounded-full flex items-center justify-center text-6xl font-bold border-4 border-zinc-800 overflow-hidden bg-[var(--primary)] text-white shadow-2xl transition-transform duration-300 group-hover:scale-105">
                 {uploadingAvatar ? (
-                  <div className="w-10 h-10 border-4 border-white/20 border-t-white rounded-full animate-spin" />
+                  <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center">
+                    <LogoLoader size={40} />
+                  </div>
                 ) : avatarUrl ? (
                   <img src={`http://127.0.0.1:8001${avatarUrl}`} alt="Avatar" className="w-full h-full object-cover" />
                 ) : (
@@ -735,7 +738,7 @@ export default function ProfilePage() {
                 disabled={!avatarFile || uploadingAvatar}
                 className="flex-1 py-3 rounded-xl font-bold btn-primary text-black disabled:opacity-50 flex justify-center items-center gap-2"
               >
-                {uploadingAvatar && <div className="w-4 h-4 border-2 border-black/20 border-t-black rounded-full animate-spin" />}
+                {uploadingAvatar && <LogoLoader size={16} />}
                 {uploadingAvatar ? 'Subiendo...' : 'Subir y Guardar'}
               </button>
             </div>

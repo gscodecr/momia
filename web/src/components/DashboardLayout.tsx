@@ -16,12 +16,17 @@ export default function DashboardLayout({ children }: LayoutProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [notifications, setNotifications] = useState<any[]>([]);
   const profileMenuRef = useRef<HTMLDivElement>(null);
+  const notifMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (profileMenuRef.current && !profileMenuRef.current.contains(event.target as Node)) {
         setIsProfileOpen(false);
+      }
+      if (notifMenuRef.current && !notifMenuRef.current.contains(event.target as Node)) {
+        setIsNotificationsOpen(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
@@ -56,10 +61,27 @@ export default function DashboardLayout({ children }: LayoutProps) {
         })
         .catch(() => {});
       };
+      const fetchNotifications = () => {
+        fetch('http://127.0.0.1:8001/notifications/', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        })
+        .then(res => res.json())
+        .then(data => {
+          if(Array.isArray(data)) setNotifications(data);
+        })
+        .catch(() => {});
+      };
       
       fetchUserData();
+      fetchNotifications();
+      
+      const interval = setInterval(fetchNotifications, 30000); // poll every 30s
+      
       window.addEventListener('profileUpdated', fetchUserData);
-      return () => window.removeEventListener('profileUpdated', fetchUserData);
+      return () => {
+        window.removeEventListener('profileUpdated', fetchUserData);
+        clearInterval(interval);
+      };
     }
   }, [router]);
 
@@ -68,6 +90,28 @@ export default function DashboardLayout({ children }: LayoutProps) {
     localStorage.removeItem('role');
     router.push('/login');
   };
+
+  const markAsRead = (id: number) => {
+    const token = localStorage.getItem('token');
+    fetch(`http://127.0.0.1:8001/notifications/${id}/read`, {
+      method: 'PUT',
+      headers: { 'Authorization': `Bearer ${token}` }
+    }).then(() => {
+      setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n));
+    });
+  };
+
+  const markAllAsRead = () => {
+    const token = localStorage.getItem('token');
+    fetch(`http://127.0.0.1:8001/notifications/read-all`, {
+      method: 'PUT',
+      headers: { 'Authorization': `Bearer ${token}` }
+    }).then(() => {
+      setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
+    });
+  };
+
+  const unreadCount = notifications.filter(n => !n.is_read).length;
 
   if (!role) return null; // Avoid hydration mismatch
 
@@ -102,7 +146,7 @@ export default function DashboardLayout({ children }: LayoutProps) {
       {/* Sidebar */}
       <aside className={`fixed z-50 inset-y-0 left-0 w-64 flex flex-col transform transition-transform duration-300 ease-in-out border-r md:sticky md:top-0 md:h-screen md:translate-x-0 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`} style={{ backgroundColor: 'var(--surface)', borderColor: 'var(--border)' }}>
         <div className="h-16 flex-shrink-0 flex items-center justify-between px-6 border-b" style={{ borderColor: 'var(--border)' }}>
-          <h1 className="text-xl font-bold" style={{ color: 'var(--primary)' }}>Momia TS</h1>
+          <img src="/logo_horizontal-04.png" alt="MOMIA" className="h-8 md:h-12 w-auto object-contain" style={{ filter: 'drop-shadow(0px 0px 8px rgba(0,180,216,0.15))' }} />
           <button className="md:hidden" onClick={() => setIsMobileMenuOpen(false)}>
             <X size={24} />
           </button>
@@ -148,33 +192,44 @@ export default function DashboardLayout({ children }: LayoutProps) {
       <div className="flex-1"></div>
       <div className="flex items-center gap-4 relative">
         {/* Notifications */}
-        <div className="relative">
+        <div className="relative" ref={notifMenuRef}>
           <button 
             onClick={() => { setIsNotificationsOpen(!isNotificationsOpen); setIsProfileOpen(false); }}
             className="relative p-2 rounded-full hover:bg-white/5 transition-colors"
           >
             <Bell size={20} />
-            <span className="absolute top-1 right-1 w-2 h-2 rounded-full" style={{ backgroundColor: 'var(--primary)' }}></span>
+            {unreadCount > 0 && (
+              <span className="absolute top-1 right-1 w-2.5 h-2.5 rounded-full border border-black" style={{ backgroundColor: 'var(--primary)' }}></span>
+            )}
           </button>
           
           {isNotificationsOpen && (
             <div className="absolute right-0 mt-2 w-80 rounded-xl border border-white/10 shadow-2xl overflow-hidden bg-[#09090b] p-0 z-50">
-              <div className="p-4 border-b border-white/10 bg-white/5">
+              <div className="p-4 border-b border-white/10 bg-white/5 flex justify-between items-center">
                 <h3 className="font-bold">Notificaciones</h3>
+                {unreadCount > 0 && (
+                  <button onClick={markAllAsRead} className="text-xs text-primary hover:underline">Marcar todo como leído</button>
+                )}
               </div>
               <div className="max-h-80 overflow-y-auto">
-                <div className="p-4 border-b border-white/5 hover:bg-white/5 cursor-pointer transition-colors">
-                  <p className="text-sm font-semibold">Nuevo mensaje de Coach Gerardo</p>
-                  <p className="text-xs opacity-60 mt-1">Hace 2 horas</p>
-                </div>
-                <div className="p-4 border-b border-white/5 hover:bg-white/5 cursor-pointer transition-colors">
-                  <p className="text-sm font-semibold">Tu comprobante SINPE fue aprobado</p>
-                  <p className="text-xs opacity-60 mt-1">Ayer</p>
-                </div>
-                <div className="p-4 hover:bg-white/5 cursor-pointer transition-colors">
-                  <p className="text-sm font-semibold">Rutina de piscina actualizada</p>
-                  <p className="text-xs opacity-60 mt-1">Ayer</p>
-                </div>
+                {notifications.length === 0 ? (
+                  <div className="p-4 text-center text-sm opacity-50">No tienes notificaciones</div>
+                ) : (
+                  notifications.map(notif => (
+                    <div 
+                      key={notif.id}
+                      onClick={() => !notif.is_read && markAsRead(notif.id)}
+                      className={`p-4 border-b border-white/5 cursor-pointer transition-colors ${notif.is_read ? 'opacity-60 hover:bg-white/5' : 'bg-white/5 hover:bg-white/10'}`}
+                    >
+                      <div className="flex justify-between items-start mb-1">
+                        <p className="text-sm font-semibold">{notif.title}</p>
+                        {!notif.is_read && <span className="w-2 h-2 rounded-full bg-primary mt-1"></span>}
+                      </div>
+                      <p className="text-xs">{notif.message}</p>
+                      <p className="text-xs opacity-50 mt-2">{new Date(notif.created_at).toLocaleString('es-CR')}</p>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
           )}

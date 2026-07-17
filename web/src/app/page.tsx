@@ -13,10 +13,7 @@ export default function LandingPage() {
       {/* Navigation */}
       <nav className="relative z-10 flex items-center justify-between px-6 py-6 max-w-7xl mx-auto">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-[var(--primary)] flex items-center justify-center font-bold text-white shadow-[0_0_15px_rgba(0,188,212,0.5)]">
-            M
-          </div>
-          <span className="text-xl font-bold tracking-tight">Momia TS</span>
+          <img src="/logo_horizontal-04.png" alt="MOMIA Training System" className="h-8 md:h-10 object-contain" style={{ filter: 'drop-shadow(0px 0px 10px rgba(0,180,216,0.3))' }} />
         </div>
         <div className="flex items-center gap-6">
           <Link href="/login" className="text-sm font-medium hover:text-[var(--primary)] transition-colors">

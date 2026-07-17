@@ -1,9 +1,11 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
 from sqlalchemy.orm import Session
 from typing import List
 import models, schemas
 from database import get_db
 from auth import get_current_user
+import utils
+from services import email_service
 
 router = APIRouter(
     prefix="/workouts",
@@ -69,7 +71,7 @@ def get_workouts_by_athlete(athlete_id: int, db: Session = Depends(get_db), curr
     return db.query(models.Workout).filter(models.Workout.athlete_id == athlete_id).all()
 
 @router.post("/", response_model=schemas.WorkoutOut)
-def create_workout(workout: schemas.WorkoutCreate, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+def create_workout(workout: schemas.WorkoutCreate, background_tasks: BackgroundTasks, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
     if current_user.role.name not in ["admin", "coach"]:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Solo los entrenadores pueden asignar rutinas")
     
@@ -77,6 +79,26 @@ def create_workout(workout: schemas.WorkoutCreate, db: Session = Depends(get_db)
     db.add(new_workout)
     db.commit()
     db.refresh(new_workout)
+    
+    # Notify athlete
+    athlete = db.query(models.User).filter(models.User.id == new_workout.athlete_id).first()
+    if athlete:
+        utils.create_notification(
+            db, 
+            user_id=athlete.id, 
+            title="Nuevo entrenamiento", 
+            message=f"Tu entrenador ha asignado: {new_workout.title}", 
+            notif_type="WORKOUT"
+        )
+        if athlete.email:
+            background_tasks.add_task(
+                email_service.send_workout_assigned_email,
+                to_email=athlete.email,
+                athlete_name=athlete.first_name,
+                workout_title=new_workout.title,
+                date=str(new_workout.scheduled_date.date())
+            )
+            
     return new_workout
 
 @router.put("/{workout_id}", response_model=schemas.WorkoutOut)

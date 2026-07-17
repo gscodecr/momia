@@ -2,6 +2,8 @@ import os
 import uuid
 from PIL import Image
 from fastapi import UploadFile
+from sqlalchemy.orm import Session
+import models
 
 def optimize_and_save_image(upload_file: UploadFile, dest_folder: str, max_width: int = 800) -> str:
     """
@@ -40,3 +42,18 @@ def optimize_and_save_image(upload_file: UploadFile, dest_folder: str, max_width
     # Return relative URL path
     # Example: if dest_folder is 'uploads/avatars', it returns '/uploads/avatars/filename.webp'
     return f"/{dest_folder}/{filename}"
+
+def create_notification(db: Session, user_id: int, title: str, message: str, notif_type: str):
+    """
+    Creates an in-app notification for a user.
+    """
+    notif = models.Notification(
+        user_id=user_id,
+        title=title,
+        message=message,
+        type=notif_type
+    )
+    db.add(notif)
+    db.commit()
+    db.refresh(notif)
+    return notif

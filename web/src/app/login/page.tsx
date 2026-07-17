@@ -49,7 +49,9 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundColor: 'var(--background)' }}>
       <div className="glass-card w-full max-w-md">
-        <h1 className="text-3xl font-bold text-[var(--primary)] mb-6 text-center" style={{ color: 'var(--primary)' }}>Momia TS</h1>
+        <div className="flex justify-center mb-6">
+          <img src="/logo_horizontal-04.png" alt="MOMIA Training System" className="h-12 object-contain" style={{ filter: 'drop-shadow(0px 0px 10px rgba(0,180,216,0.3))' }} />
+        </div>
         <h2 className="text-xl mb-6 text-center">Iniciar Sesión</h2>
         <form onSubmit={handleLogin} className="flex flex-col gap-4">
           <input
