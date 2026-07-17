@@ -18,6 +18,37 @@ def get_coach_athletes(db: Session = Depends(get_db), current_user: models.User 
     athletes = db.query(models.User).join(models.Role).filter(models.Role.name == "athlete", models.User.is_active == True).all()
     return athletes
 
+@router.put("/athletes/{athlete_id}", response_model=schemas.UserOut)
+def update_athlete_profile(athlete_id: int, profile_update: schemas.UserUpdateProfile, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    if current_user.role.name not in ["admin", "coach"]:
+        raise HTTPException(status_code=403, detail="No autorizado")
+        
+    athlete = db.query(models.User).filter(models.User.id == athlete_id).first()
+    if not athlete or athlete.role.name != "athlete":
+        raise HTTPException(status_code=404, detail="Atleta no encontrado")
+        
+    profile = db.query(models.AthleteProfile).filter(models.AthleteProfile.user_id == athlete_id).first()
+    if not profile:
+        profile = models.AthleteProfile(user_id=athlete_id, discipline="triatlon")
+        db.add(profile)
+        
+    if profile_update.ftp is not None:
+        profile.ftp = profile_update.ftp
+    if profile_update.injuries is not None:
+        profile.injuries = profile_update.injuries
+    if profile_update.heart_rate_zones is not None:
+        profile.heart_rate_zones = profile_update.heart_rate_zones
+    if profile_update.discipline is not None:
+        profile.discipline = profile_update.discipline
+    if profile_update.weight is not None:
+        profile.weight = profile_update.weight
+    if profile_update.body_fat is not None:
+        profile.body_fat = profile_update.body_fat
+        
+    db.commit()
+    db.refresh(athlete)
+    return athlete
+
 @router.get("/", response_model=List[schemas.WorkoutOut])
 def get_workouts(db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
     if not current_user.role:

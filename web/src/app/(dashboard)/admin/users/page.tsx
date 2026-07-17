@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
-import { UserPlus, Shield, Activity, User, CheckCircle2, XCircle } from 'lucide-react';
+import { UserPlus, Shield, Activity, User, CheckCircle2, XCircle, Search } from 'lucide-react';
 
 interface Role {
   id: number;
@@ -24,6 +24,8 @@ export default function AdminUsers() {
   const [users, setUsers] = useState<UserData[]>([]);
   const [roles, setRoles] = useState<Role[]>([]);
   const [loading, setLoading] = useState(true);
+  const [roleFilter, setRoleFilter] = useState<string>('Todos'); // 'Todos', 'Admin', 'Coach', 'Athlete'
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Modal State
   const [showAddModal, setShowAddModal] = useState(false);
@@ -142,6 +144,38 @@ export default function AdminUsers() {
     }
   };
 
+  const updateCoach = async (userId: number, coachId: number | null) => {
+    try {
+      const res = await fetch(`http://127.0.0.1:8001/admin/users/${userId}/coach`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({ coach_id: coachId })
+      });
+      if (res.ok) {
+        toast.success('Entrenador asignado');
+        fetchData();
+      } else {
+        toast.error('Error al asignar entrenador');
+      }
+    } catch (err) {
+      toast.error('Error de red');
+    }
+  };
+
+  const coaches = users.filter(u => {
+    const roleName = u.role?.name?.toLowerCase();
+    return roleName === 'coach' || roleName === 'admin';
+  });
+  const filteredUsers = users.filter(u => {
+    const matchRole = roleFilter === 'Todos' || u.role?.name?.toLowerCase() === roleFilter.toLowerCase();
+    const searchStr = `${u.first_name} ${u.last_name} ${u.email}`.toLowerCase();
+    const matchSearch = searchQuery.trim() === '' || searchStr.includes(searchQuery.toLowerCase());
+    return matchRole && matchSearch;
+  });
+
   return (
     <div className="min-h-screen p-4 md:p-8" style={{ backgroundColor: 'var(--background)', color: 'var(--foreground)' }}>
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
@@ -158,6 +192,30 @@ export default function AdminUsers() {
         </button>
       </div>
 
+      <div className="flex flex-col md:flex-row gap-4 mb-6">
+        <div className="flex gap-2 overflow-x-auto pb-2 flex-1">
+          {['Todos', 'Admin', 'Coach', 'Athlete'].map(filter => (
+            <button
+              key={filter}
+              onClick={() => setRoleFilter(filter)}
+              className={`px-4 py-2 rounded-full text-sm font-semibold transition-colors whitespace-nowrap ${roleFilter === filter ? 'bg-[var(--primary)] text-white' : 'bg-white/5 text-zinc-400 hover:bg-white/10'}`}
+            >
+              {filter}
+            </button>
+          ))}
+        </div>
+        <div className="relative w-full md:w-64">
+          <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 opacity-50" />
+          <input 
+            type="text" 
+            placeholder="Buscar por nombre o correo..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-9 pr-4 py-2 rounded-xl bg-black/30 border border-white/10 focus:border-[var(--primary)] focus:outline-none transition-colors text-sm"
+          />
+        </div>
+      </div>
+
       {loading ? (
         <div className="flex justify-center items-center h-64">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderColor: 'var(--primary)' }}></div>
@@ -165,18 +223,19 @@ export default function AdminUsers() {
       ) : (
         <div className="glass-card overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
+            <table className="w-full text-left border-collapse min-w-[1000px]">
               <thead>
                 <tr className="border-b border-white/10 bg-black/20">
                   <th className="p-4 font-semibold opacity-80">Usuario</th>
                   <th className="p-4 font-semibold opacity-80">Contacto</th>
                   <th className="p-4 font-semibold opacity-80">Rol</th>
+                  <th className="p-4 font-semibold opacity-80">Entrenador Asignado</th>
                   <th className="p-4 font-semibold opacity-80">Estado</th>
                   <th className="p-4 font-semibold opacity-80">Acciones</th>
                 </tr>
               </thead>
               <tbody>
-                {users.map(user => (
+                {filteredUsers.map(user => (
                   <tr key={user.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
                     <td className="p-4">
                       <div className="font-bold flex items-center gap-2">
@@ -197,6 +256,22 @@ export default function AdminUsers() {
                           <option key={r.id} value={r.id}>{r.name}</option>
                         ))}
                       </select>
+                    </td>
+                    <td className="p-4">
+                      {user.role?.name?.toLowerCase() === 'athlete' ? (
+                        <select
+                          value={(user as any).athlete_profile?.coach_id || ''}
+                          onChange={(e) => updateCoach(user.id, e.target.value ? Number(e.target.value) : null)}
+                          className="bg-black/20 border border-white/10 rounded px-2 py-1 text-sm outline-none focus:border-[var(--primary)]"
+                        >
+                          <option value="">Sin Asignar</option>
+                          {coaches.map(c => (
+                            <option key={c.id} value={c.id}>{c.first_name} {c.last_name}</option>
+                          ))}
+                        </select>
+                      ) : (
+                        <span className="text-xs opacity-50">-</span>
+                      )}
                     </td>
                     <td className="p-4">
                       <div className="flex flex-col gap-2">
@@ -223,12 +298,14 @@ export default function AdminUsers() {
                     </td>
                     <td className="p-4">
                       <div className="flex gap-2">
-                        <button 
-                          onClick={() => updateStatus(user.id, 'is_approved', !user.is_approved)}
-                          className={`px-3 py-1 rounded text-xs font-semibold transition-colors border ${user.is_approved ? 'bg-yellow-500/10 border-yellow-500/30 text-yellow-400 hover:bg-yellow-500/20' : 'bg-green-500/10 border-green-500/30 text-green-400 hover:bg-green-500/20'}`}
-                        >
-                          {user.is_approved ? 'Revocar' : 'Aprobar'}
-                        </button>
+                        {!user.is_approved && (
+                          <button 
+                            onClick={() => updateStatus(user.id, 'is_approved', true)}
+                            className="px-3 py-1 rounded text-xs font-semibold transition-colors border bg-green-500/10 border-green-500/30 text-green-400 hover:bg-green-500/20"
+                          >
+                            Aprobar
+                          </button>
+                        )}
                         <button 
                           onClick={() => updateStatus(user.id, 'is_active', !user.is_active)}
                           className={`px-3 py-1 rounded text-xs font-semibold transition-colors border ${user.is_active ? 'bg-red-500/10 border-red-500/30 text-red-400 hover:bg-red-500/20' : 'bg-blue-500/10 border-blue-500/30 text-blue-400 hover:bg-blue-500/20'}`}

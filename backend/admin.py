@@ -61,6 +61,27 @@ def get_all_users(db: Session = Depends(database.get_db), current_user: models.U
         raise HTTPException(status_code=403, detail="No autorizado")
     return db.query(models.User).all()
 
+@router.put("/users/{user_id}/coach", response_model=schemas.UserOut)
+def assign_coach_to_user(user_id: int, request: schemas.AssignCoachRequest, db: Session = Depends(database.get_db), current_user: models.User = Depends(get_current_user)):
+    if current_user.role.name != "admin":
+        raise HTTPException(status_code=403, detail="No autorizado")
+    
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+        
+    profile = db.query(models.AthleteProfile).filter(models.AthleteProfile.user_id == user_id).first()
+    if not profile:
+        # Create a blank profile if it doesn't exist
+        profile = models.AthleteProfile(user_id=user_id, discipline="triatlon", coach_id=request.coach_id)
+        db.add(profile)
+    else:
+        profile.coach_id = request.coach_id
+        
+    db.commit()
+    db.refresh(user)
+    return user
+
 @router.post("/users", response_model=schemas.UserOut)
 def create_user(user: schemas.UserCreate, db: Session = Depends(database.get_db), current_user: models.User = Depends(get_current_user)):
     """ Súper Admin: Crear un usuario directamente """
@@ -133,3 +154,23 @@ def approve_user(user_id: int, db: Session = Depends(database.get_db), current_u
     user.is_approved = True
     db.commit()
     return {"message": "Usuario aprobado exitosamente"}
+
+@router.get("/orders", response_model=List[schemas.OrderOut])
+def get_orders(db: Session = Depends(database.get_db), current_user: models.User = Depends(get_current_user)):
+    if current_user.role.name != "admin":
+        raise HTTPException(status_code=403, detail="No autorizado")
+    return db.query(models.Order).order_by(models.Order.created_at.desc()).all()
+
+@router.put("/orders/{order_id}/deliver", response_model=schemas.OrderOut)
+def deliver_order(order_id: int, db: Session = Depends(database.get_db), current_user: models.User = Depends(get_current_user)):
+    if current_user.role.name != "admin":
+        raise HTTPException(status_code=403, detail="No autorizado")
+    
+    order = db.query(models.Order).filter(models.Order.id == order_id).first()
+    if not order:
+        raise HTTPException(status_code=404, detail="Orden no encontrada")
+    
+    order.status = "ENTREGADO"
+    db.commit()
+    db.refresh(order)
+    return order
