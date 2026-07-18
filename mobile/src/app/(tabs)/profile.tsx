@@ -29,6 +29,10 @@ export default function ProfileScreen() {
   
   // Payment State
   const [autoPay, setAutoPay] = useState(false);
+  const [billingInfo, setBillingInfo] = useState<any>(null);
+  const [simulatingPayment, setSimulatingPayment] = useState(false);
+  const [sinpeFile, setSinpeFile] = useState<any>(null);
+  const [uploadingSinpe, setUploadingSinpe] = useState(false);
   const [loadingAutoPay, setLoadingAutoPay] = useState(false);
 
   useFocusEffect(
@@ -41,10 +45,76 @@ export default function ProfileScreen() {
     try {
       const res = await api.get('/payments/me');
       if (res.data) {
+        setBillingInfo(res.data);
         setAutoPay(res.data.auto_pay || false);
       }
     } catch (e) {
       console.log('Error fetching billing info', e);
+    }
+  };
+
+  const handleTiloPaySimulate = async () => {
+    setSimulatingPayment(true);
+    try {
+      const amount = "40000";
+      const desc = `Mensualidad ${new Date().toLocaleString('es-CR', { month: 'long', year: 'numeric' })}`;
+      const res = await api.post(`/payments/tilopay/simulate?amount=${amount}&description=${desc}`);
+      if (res.data) {
+        Alert.alert('Éxito', 'Pago exitoso simulado. Fecha de corte actualizada.');
+        fetchBilling();
+      }
+    } catch (err) {
+      Alert.alert('Error', 'Error al procesar el pago');
+    } finally {
+      setSimulatingPayment(false);
+    }
+  };
+
+  const handleSinpePick = async () => {
+    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (permissionResult.granted === false) {
+      Alert.alert("Permiso Denegado", "Se requiere acceso a la galería.");
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: false,
+      quality: 0.8,
+    });
+    if (!result.canceled) {
+      setSinpeFile(result.assets[0]);
+    }
+  };
+
+  const handleSinpeSubmit = async () => {
+    if (!sinpeFile) {
+      Alert.alert('Aviso', 'Selecciona un comprobante primero');
+      return;
+    }
+    
+    setUploadingSinpe(true);
+    const amount = "40000";
+    const desc = `Mensualidad ${new Date().toLocaleString('es-CR', { month: 'long', year: 'numeric' })}`;
+    
+    const formData = new FormData();
+    const filename = sinpeFile.uri.split('/').pop() || 'comprobante.jpg';
+    const match = /\.(\w+)$/.exec(filename);
+    const type = match ? `image/${match[1]}` : `image/jpeg`;
+    formData.append('file', { uri: sinpeFile.uri, name: filename, type } as any);
+
+    try {
+      const res = await api.post(`/payments/report-sinpe?amount=${amount}&description=${desc}`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      if (res.data) {
+        Alert.alert('Éxito', 'Comprobante enviado exitosamente');
+        setSinpeFile(null);
+        fetchBilling();
+      }
+    } catch (err) {
+      Alert.alert('Error', 'Error al enviar comprobante');
+    } finally {
+      setUploadingSinpe(false);
     }
   };
 
@@ -211,15 +281,20 @@ export default function ProfileScreen() {
       </View>
 
       {/* Tabs */}
-      <View style={styles.tabsContainer}>
-        {['Personal', 'Expediente', 'Ajustes'].map((tab) => (
+      <ScrollView 
+        horizontal 
+        showsHorizontalScrollIndicator={false} 
+        style={{ flexGrow: 0, marginBottom: 30 }} 
+        contentContainerStyle={[styles.tabsContainer, { marginBottom: 0 }]}
+      >
+        {['Personal', 'Expediente', 'Ajustes', 'Facturación'].map((tab) => (
           <TouchableOpacity 
             key={tab} 
-            style={[styles.tabBtn, activeTab === tab && styles.tabBtnActive]}
+            style={[styles.tabBtn, {paddingVertical: 12, paddingHorizontal: 16, flex: undefined}, activeTab === tab && styles.tabBtnActive]}
             onPress={() => setActiveTab(tab)}
           >
             <Ionicons 
-              name={tab === 'Personal' ? 'person' : tab === 'Expediente' ? 'pulse' : 'settings'} 
+              name={tab === 'Personal' ? 'person' : tab === 'Expediente' ? 'pulse' : tab === 'Facturación' ? 'card' : 'settings'} 
               size={16} 
               color={activeTab === tab ? '#000' : '#888'} 
               style={{ marginRight: 6 }} 
@@ -227,7 +302,7 @@ export default function ProfileScreen() {
             <Text style={[styles.tabText, activeTab === tab && styles.tabTextActive]}>{tab}</Text>
           </TouchableOpacity>
         ))}
-      </View>
+      </ScrollView>
 
       {/* Tab Content */}
       {activeTab === 'Personal' && (
@@ -463,6 +538,76 @@ export default function ProfileScreen() {
           <TouchableOpacity style={styles.saveBtn} onPress={handleSaveProfile} disabled={saving}>
             {saving ? <ActivityIndicator color="#000" /> : <Text style={styles.saveBtnText}>Guardar Cambios</Text>}
           </TouchableOpacity>
+        </View>
+      )}
+
+      {activeTab === 'Facturación' && (
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Facturación y Pagos</Text>
+          <Text style={styles.sectionDesc}>Gestiona tu mensualidad y pagos.</Text>
+
+          {/* Estado Actual */}
+          <Text style={[styles.sectionTitle, {marginTop: 20}]}>Estado Actual</Text>
+          <View style={[styles.formGroup, {backgroundColor: 'rgba(255,255,255,0.02)', padding: 16, borderRadius: 12, borderLeftWidth: 4, borderLeftColor: billingInfo?.subscription_status === 'Activo' ? '#4ade80' : billingInfo?.subscription_status === 'Pausada' ? '#facc15' : '#f87171'}]}>
+            <Text style={{color: billingInfo?.subscription_status === 'Activo' ? '#4ade80' : billingInfo?.subscription_status === 'Pausada' ? '#facc15' : '#f87171', fontSize: 18, fontWeight: 'bold'}}>
+              {billingInfo?.subscription_status === 'Activo' ? '¡Suscripción Activa!' : billingInfo?.subscription_status === 'Pausada' ? 'Suscripción Pausada' : 'Pago Vencido'}
+            </Text>
+            <Text style={{color: '#888', marginTop: 4}}>Próximo corte: {billingInfo?.next_payment_date ? new Date(billingInfo.next_payment_date).toLocaleDateString('es-CR') : 'No definido'}</Text>
+            <Text style={{color: '#fff', marginTop: 12, fontSize: 16, fontWeight: 'bold'}}>Suscripción {billingInfo?.subscription_type || 'No definido'}</Text>
+          </View>
+
+          {/* Métodos de Pago */}
+          <Text style={[styles.sectionTitle, {marginTop: 20}]}>Métodos de Pago</Text>
+          {billingInfo?.payment_preference === 'Tarjeta' ? (
+            <View style={[styles.formGroup, {backgroundColor: 'rgba(255,255,255,0.02)', padding: 16, borderRadius: 12}]}>
+              <Text style={{color: '#fff', fontSize: 16, fontWeight: 'bold', marginBottom: 4}}>Pago con Tarjeta</Text>
+              <Text style={{color: '#888', marginBottom: 16}}>Genera tu pago seguro de forma manual a través de Tilopay.</Text>
+              
+              <TouchableOpacity style={styles.saveBtn} onPress={handleTiloPaySimulate} disabled={simulatingPayment}>
+                {simulatingPayment ? <ActivityIndicator color="#000" /> : <Text style={styles.saveBtnText}>Ir a Tilopay</Text>}
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <View style={[styles.formGroup, {backgroundColor: 'rgba(255,255,255,0.02)', padding: 16, borderRadius: 12}]}>
+              <Text style={{color: '#fff', fontSize: 16, fontWeight: 'bold', marginBottom: 4}}>Reportar SINPE / Transf.</Text>
+              <Text style={{color: '#888', marginBottom: 16}}>Sube la imagen de tu comprobante de pago para revisión.</Text>
+              
+              <TouchableOpacity style={[styles.selectBtn, {height: 80, justifyContent: 'center', marginBottom: 16, borderWidth: 1, borderStyle: 'dashed', borderColor: '#444'}]} onPress={handleSinpePick}>
+                <Ionicons name={sinpeFile ? "image" : "cloud-upload-outline"} size={24} color={sinpeFile ? "#00b4d8" : "#888"} />
+                <Text style={{color: sinpeFile ? '#00b4d8' : '#888', marginTop: 8}}>{sinpeFile ? 'Comprobante seleccionado' : 'Seleccionar Imagen'}</Text>
+              </TouchableOpacity>
+
+              {sinpeFile && (
+                <TouchableOpacity style={styles.saveBtn} onPress={handleSinpeSubmit} disabled={uploadingSinpe}>
+                  {uploadingSinpe ? <ActivityIndicator color="#000" /> : <Text style={styles.saveBtnText}>Enviar Comprobante</Text>}
+                </TouchableOpacity>
+              )}
+            </View>
+          )}
+
+          {/* Historial de Pagos */}
+          <Text style={[styles.sectionTitle, {marginTop: 20}]}>Historial de Pagos</Text>
+          <View style={{gap: 12}}>
+            {!billingInfo?.payments || billingInfo.payments.length === 0 ? (
+              <Text style={{color: '#888', textAlign: 'center', paddingVertical: 16}}>No hay pagos registrados aún.</Text>
+            ) : (
+              billingInfo.payments.map((payment: any) => (
+                <View key={payment.id} style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.02)', padding: 12, borderRadius: 12}}>
+                  <View style={{flexDirection: 'row', alignItems: 'center', flex: 1}}>
+                    <View style={{width: 40, height: 40, borderRadius: 20, backgroundColor: '#222', justifyContent: 'center', alignItems: 'center', marginRight: 12}}>
+                      <Ionicons name="card" size={20} color={payment.status === 'APPROVED' ? '#4ade80' : '#facc15'} />
+                    </View>
+                    <View style={{flex: 1, marginRight: 8}}>
+                      <Text style={{color: '#fff', fontWeight: 'bold'}}>{payment.description || 'Pago'}</Text>
+                      <Text style={{color: '#888', fontSize: 12}}>{new Date(payment.created_at).toLocaleDateString('es-CR')} • {payment.payment_method}</Text>
+                      {payment.status === 'PENDING' && <Text style={{color: '#facc15', fontSize: 10}}>En Revisión</Text>}
+                    </View>
+                  </View>
+                  <Text style={{color: '#fff', fontWeight: 'bold'}}>₡{Number(payment.amount).toLocaleString('es-CR')}</Text>
+                </View>
+              ))
+            )}
+          </View>
         </View>
       )}
 
