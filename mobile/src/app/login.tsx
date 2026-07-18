@@ -1,6 +1,9 @@
 import React, { useState, useContext } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, Image } from 'react-native';
+import { BlurView } from 'expo-blur';
+import { LinearGradient } from 'expo-linear-gradient';
 import { AuthContext } from '../context/AuthContext';
+import { Theme } from '../constants/theme';
 import api from '../services/api';
 
 export default function LoginScreen() {
@@ -41,32 +44,41 @@ export default function LoginScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>MOMIA TS</Text>
-      
-      {error ? <Text style={styles.error}>{error}</Text> : null}
-      
-      <TextInput
-        style={styles.input}
-        placeholder="Correo electrónico"
-        placeholderTextColor="#aaa"
-        value={email}
-        onChangeText={setEmail}
-        autoCapitalize="none"
-        keyboardType="email-address"
+      <LinearGradient
+        colors={[Theme.colors.background, Theme.colors.surface, '#000000']}
+        style={StyleSheet.absoluteFillObject}
       />
-      
-      <TextInput
-        style={styles.input}
-        placeholder="Contraseña"
-        placeholderTextColor="#aaa"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-      />
-      
-      <TouchableOpacity style={styles.button} onPress={handleLogin} disabled={loading}>
-        {loading ? <ActivityIndicator color="#000" /> : <Text style={styles.buttonText}>Iniciar Sesión</Text>}
-      </TouchableOpacity>
+      <View style={styles.radialGlow} />
+
+      <BlurView intensity={30} tint="dark" style={styles.glassCard}>
+        <Image source={require('../../assets/images/logo.png')} style={styles.logo} resizeMode="contain" />
+        <Text style={styles.subtitle}>Inicia sesión para continuar</Text>
+        
+        {error ? <Text style={styles.error}>{error}</Text> : null}
+        
+        <TextInput
+          style={styles.input}
+          placeholder="Correo electrónico"
+          placeholderTextColor="rgba(255,255,255,0.4)"
+          value={email}
+          onChangeText={setEmail}
+          autoCapitalize="none"
+          keyboardType="email-address"
+        />
+        
+        <TextInput
+          style={styles.input}
+          placeholder="Contraseña"
+          placeholderTextColor="rgba(255,255,255,0.4)"
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+        />
+        
+        <TouchableOpacity style={styles.button} onPress={handleLogin} disabled={loading}>
+          {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Entrar</Text>}
+        </TouchableOpacity>
+      </BlurView>
     </View>
   );
 }
@@ -75,40 +87,70 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
-    padding: 24,
-    backgroundColor: '#09090b',
+    padding: Theme.spacing.lg,
+    backgroundColor: Theme.colors.background,
   },
-  title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#DFFF00',
+  radialGlow: {
+    position: 'absolute',
+    top: '20%',
+    left: '10%',
+    width: 300,
+    height: 300,
+    borderRadius: 150,
+    backgroundColor: Theme.colors.primary,
+    opacity: 0.15,
+  },
+  glassCard: {
+    padding: Theme.spacing.xl,
+    borderRadius: Theme.borderRadius.lg,
+    borderWidth: 1,
+    borderColor: Theme.colors.glassBorder,
+    overflow: 'hidden',
+    backgroundColor: Theme.colors.glassBg,
+  },
+  logo: {
+    width: '100%',
+    height: 80,
+    marginBottom: Theme.spacing.md,
+  },
+  subtitle: {
+    fontSize: 14,
+    color: Theme.colors.foreground,
     textAlign: 'center',
-    marginBottom: 40,
+    opacity: 0.7,
+    marginBottom: Theme.spacing.xl,
+    marginTop: Theme.spacing.xs,
   },
   input: {
-    backgroundColor: '#1a1a1a',
-    color: '#fff',
-    borderRadius: 8,
-    padding: 16,
-    marginBottom: 16,
+    backgroundColor: 'rgba(0,0,0,0.3)',
+    color: Theme.colors.foreground,
+    borderRadius: Theme.borderRadius.md,
+    padding: Theme.spacing.md,
+    marginBottom: Theme.spacing.md,
     borderWidth: 1,
-    borderColor: '#333',
+    borderColor: Theme.colors.border,
   },
   button: {
-    backgroundColor: '#DFFF00',
-    padding: 16,
-    borderRadius: 8,
+    backgroundColor: Theme.colors.primary,
+    padding: Theme.spacing.md,
+    borderRadius: Theme.borderRadius.md,
     alignItems: 'center',
-    marginTop: 8,
+    marginTop: Theme.spacing.sm,
+    shadowColor: Theme.colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 5,
   },
   buttonText: {
-    color: '#000',
+    color: '#fff',
     fontWeight: 'bold',
     fontSize: 16,
   },
   error: {
-    color: '#ff4444',
-    marginBottom: 16,
+    color: Theme.colors.error,
+    marginBottom: Theme.spacing.md,
     textAlign: 'center',
+    fontSize: 14,
   }
 });
