@@ -1,5 +1,6 @@
-import React, { useContext, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, TextInput, Alert, ActivityIndicator, Modal, Platform } from 'react-native';
+import React, { useContext, useState, useEffect, useCallback } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, TextInput, Alert, ActivityIndicator, Modal, Platform, Switch } from 'react-native';
+import { useFocusEffect } from 'expo-router';
 import { AuthContext } from '../../context/AuthContext';
 import { Theme } from '../../constants/theme';
 import { Ionicons } from '@expo/vector-icons';
@@ -22,6 +23,44 @@ export default function ProfileScreen() {
   const [gender, setGender] = useState(user?.gender || '');
   const [paymentPreference, setPaymentPreference] = useState(user?.payment_preference || '');
   const [subscriptionType, setSubscriptionType] = useState(user?.subscription_type || '');
+  const [subscriptionStatus, setSubscriptionStatus] = useState(user?.subscription_status || 'Activo');
+  const [emergencyContactName, setEmergencyContactName] = useState(user?.emergency_contact_name || '');
+  const [emergencyContactPhone, setEmergencyContactPhone] = useState(user?.emergency_contact_phone || '');
+  
+  // Payment State
+  const [autoPay, setAutoPay] = useState(false);
+  const [loadingAutoPay, setLoadingAutoPay] = useState(false);
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchBilling();
+    }, [])
+  );
+
+  const fetchBilling = async () => {
+    try {
+      const res = await api.get('/payments/me');
+      if (res.data) {
+        setAutoPay(res.data.auto_pay || false);
+      }
+    } catch (e) {
+      console.log('Error fetching billing info', e);
+    }
+  };
+
+  const handleToggleAutoPay = async (val: boolean) => {
+    setAutoPay(val);
+    setLoadingAutoPay(true);
+    try {
+      await api.put(`/payments/auto-pay?auto_pay=${val}`);
+      Alert.alert('Cobro Automático', val ? 'Se ha activado el cobro automático.' : 'Se ha desactivado el cobro automático.');
+    } catch (e) {
+      Alert.alert('Error', 'No se pudo actualizar preferencia de pago');
+      setAutoPay(!val);
+    } finally {
+      setLoadingAutoPay(false);
+    }
+  };
   const [address, setAddress] = useState(user?.address || '');
   
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -58,6 +97,9 @@ export default function ProfileScreen() {
       if (gender !== (user?.gender || '')) payload.gender = gender;
       if (paymentPreference !== (user?.payment_preference || '')) payload.payment_preference = paymentPreference;
       if (subscriptionType !== (user?.subscription_type || '')) payload.subscription_type = subscriptionType;
+      if (subscriptionStatus !== (user?.subscription_status || 'Activo')) payload.subscription_status = subscriptionStatus;
+      if (emergencyContactName !== (user?.emergency_contact_name || '')) payload.emergency_contact_name = emergencyContactName;
+      if (emergencyContactPhone !== (user?.emergency_contact_phone || '')) payload.emergency_contact_phone = emergencyContactPhone;
       if (address !== (user?.address || '')) payload.address = address;
       if (discipline !== (user?.athlete_profile?.discipline || '')) payload.discipline = discipline;
       if (weight !== (user?.athlete_profile?.weight || '')) payload.weight = weight;
@@ -285,18 +327,6 @@ export default function ProfileScreen() {
           </View>
 
           <View style={styles.formGroup}>
-            <Text style={styles.label}>TIPO DE SUSCRIPCIÓN</Text>
-            <TouchableOpacity style={styles.selectBtn} onPress={() => setSelectOptions({
-              title: 'Tipo de Suscripción',
-              options: ['Mensual', 'Trimestral', 'Semestral', 'Anual'],
-              onSelect: setSubscriptionType
-            })}>
-              <Text style={styles.selectBtnText}>{subscriptionType || 'Selecciona un tipo'}</Text>
-              <Ionicons name="chevron-down" size={16} color="#666" />
-            </TouchableOpacity>
-          </View>
-
-          <View style={styles.formGroup}>
             <Text style={styles.label}>DIRECCIÓN</Text>
             <TextInput 
               style={[styles.input, { height: 100, textAlignVertical: 'top' }]} 
@@ -306,6 +336,16 @@ export default function ProfileScreen() {
               placeholder="Provincia, Cantón, Distrito..." 
               placeholderTextColor="#666" 
             />
+          </View>
+          
+                    <Text style={[styles.sectionTitle, {marginTop: 24}]}>Contacto de Emergencia</Text>
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>NOMBRE</Text>
+            <TextInput style={styles.input} value={emergencyContactName} onChangeText={setEmergencyContactName} placeholder="Nombre completo" placeholderTextColor="#666" />
+          </View>
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>TELÉFONO</Text>
+            <TextInput style={styles.input} value={emergencyContactPhone} onChangeText={setEmergencyContactPhone} placeholder="Número de teléfono" placeholderTextColor="#666" keyboardType="phone-pad" />
           </View>
           
           <TouchableOpacity style={styles.saveBtn} onPress={handleSaveProfile} disabled={saving}>
@@ -429,40 +469,66 @@ export default function ProfileScreen() {
       {activeTab === 'Ajustes' && (
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Seguridad y Suscripción</Text>
-          <Text style={styles.sectionDesc}>Gestiona tu acceso y contactos vitales.</Text>
+          <Text style={styles.sectionDesc}>Gestiona tu acceso, métodos de pago y suscripción.</Text>
 
-          <View style={styles.subscriptionCard}>
-            <View style={styles.subIconBadge}>
-              <Ionicons name="shield-checkmark" size={20} color={'#00b4d8'} />
+          {/* Tipo de Suscripción */}
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>TIPO DE SUSCRIPCIÓN</Text>
+            <TouchableOpacity style={styles.selectBtn} onPress={() => setSelectOptions({
+              title: 'Tipo de Suscripción',
+              options: ['Mensual', 'Trimestral', 'Semestral', 'Anual'],
+              onSelect: setSubscriptionType
+            })}>
+              <Text style={styles.selectBtnText}>{subscriptionType || 'Selecciona un plan'}</Text>
+              <Ionicons name="chevron-down" size={16} color="#666" />
+            </TouchableOpacity>
+          </View>
+
+          {/* Estado de Suscripción */}
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>ESTADO DE SUSCRIPCIÓN</Text>
+            <TouchableOpacity style={styles.selectBtn} onPress={() => setSelectOptions({
+              title: 'Estado de Suscripción',
+              options: ['Activo', 'Pausado', 'Inactivo'],
+              onSelect: setSubscriptionStatus
+            })}>
+              <Text style={styles.selectBtnText}>{subscriptionStatus || 'Activo'}</Text>
+              <Ionicons name="chevron-down" size={16} color="#666" />
+            </TouchableOpacity>
+          </View>
+
+          {/* Pago Automático (Solo si es Tarjeta) */}
+          {paymentPreference === 'Tarjeta' && (
+            <View style={[styles.formGroup, {flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.02)', padding: 16, borderRadius: 12}]}>
+              <View style={{flex: 1, paddingRight: 16}}>
+                <Text style={[styles.label, {marginBottom: 4, color: '#fff'}]}>COBRO AUTOMÁTICO</Text>
+                <Text style={{color: '#888', fontSize: 12}}>Autorizar el cargo automático a mi tarjeta cada ciclo de facturación.</Text>
+              </View>
+              {loadingAutoPay ? (
+                <ActivityIndicator color="#00b4d8" />
+              ) : (
+                <Switch 
+                  value={autoPay} 
+                  onValueChange={handleToggleAutoPay} 
+                  trackColor={{ false: '#333', true: 'rgba(0,180,216,0.5)' }}
+                  thumbColor={autoPay ? '#00b4d8' : '#666'}
+                />
+              )}
             </View>
-            <View style={styles.subContent}>
-              <Text style={styles.subTitle}>Suscripción Activa</Text>
-              <Text style={styles.subDesc}>Facturación automática configurada</Text>
-            </View>
-          </View>
+          )}
 
-          <View style={styles.formGroup}>
-            <Text style={styles.label}>CONTACTO DE EMERGENCIA (NOMBRE)</Text>
-            <TextInput style={styles.input} placeholderTextColor="#666" />
-          </View>
+          <TouchableOpacity style={styles.saveBtn} onPress={handleSaveProfile} disabled={saving}>
+            {saving ? <ActivityIndicator color="#000" /> : <Text style={styles.saveBtnText}>Guardar Cambios</Text>}
+          </TouchableOpacity>
 
-          <View style={styles.formGroup}>
-            <Text style={styles.label}>CONTACTO DE EMERGENCIA (TELÉFONO)</Text>
-            <TextInput style={styles.input} placeholderTextColor="#666" keyboardType="phone-pad" />
-          </View>
-
-          <View style={styles.formGroup}>
-            <Text style={styles.label}>CAMBIAR CONTRASEÑA</Text>
-            <TextInput style={styles.input} placeholderTextColor="#666" secureTextEntry />
-          </View>
+          <TouchableOpacity style={styles.logoutButton} onPress={logout}>
+            <Ionicons name="log-out-outline" size={20} color={Theme.colors.error} style={{ marginRight: 8 }} />
+            <Text style={styles.logoutText}>Cerrar Sesión</Text>
+          </TouchableOpacity>
         </View>
       )}
 
-      {/* Logout button at the very bottom */}
-      <TouchableOpacity style={styles.logoutButton} onPress={logout}>
-        <Ionicons name="log-out" size={20} color={Theme.colors.error} style={{ marginRight: 8 }} />
-        <Text style={styles.logoutText}>Cerrar Sesión</Text>
-      </TouchableOpacity>
+
     
       
       {/* Injury Modal */}

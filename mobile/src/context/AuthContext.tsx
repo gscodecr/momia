@@ -15,6 +15,9 @@ interface User {
   gender?: string;
   payment_preference?: string;
   subscription_type?: string;
+  subscription_status?: string;
+  emergency_contact_name?: string;
+  emergency_contact_phone?: string;
   address?: string;
   athlete_profile?: {
     discipline?: string;
