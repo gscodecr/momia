@@ -16,6 +16,14 @@ interface User {
   payment_preference?: string;
   subscription_type?: string;
   address?: string;
+  athlete_profile?: {
+    discipline?: string;
+    weight?: string;
+    body_fat?: string;
+    ftp?: number;
+    heart_rate_zones?: string;
+    injuries?: string;
+  };
   role: {
     name: string;
   };

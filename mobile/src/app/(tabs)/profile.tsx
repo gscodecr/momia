@@ -28,6 +28,22 @@ export default function ProfileScreen() {
   
   const [saving, setSaving] = useState(false);
   
+  // Expediente State
+  const [discipline, setDiscipline] = useState(user?.athlete_profile?.discipline || '');
+  const [weight, setWeight] = useState(user?.athlete_profile?.weight || '');
+  const [bodyFat, setBodyFat] = useState(user?.athlete_profile?.body_fat || '');
+  const [ftp, setFtp] = useState(user?.athlete_profile?.ftp ? String(user.athlete_profile.ftp) : '');
+  const [hrZones, setHrZones] = useState<Record<string, string>>(() => {
+    try { return JSON.parse(user?.athlete_profile?.heart_rate_zones || ''); } 
+    catch(e) { return {z1:'', z2:'', z3:'', z4:'', z5:''}; }
+  });
+  const [injuries, setInjuries] = useState<any[]>(() => {
+    try { return JSON.parse(user?.athlete_profile?.injuries || ''); } 
+    catch(e) { return []; }
+  });
+  const [showInjuryModal, setShowInjuryModal] = useState(false);
+  const [currentInjury, setCurrentInjury] = useState<any>(null);
+
   // Custom Select Modal State
   const [selectOptions, setSelectOptions] = useState<{title: string, options: string[], onSelect: (val: string) => void} | null>(null);
 
@@ -43,6 +59,18 @@ export default function ProfileScreen() {
       if (paymentPreference !== (user?.payment_preference || '')) payload.payment_preference = paymentPreference;
       if (subscriptionType !== (user?.subscription_type || '')) payload.subscription_type = subscriptionType;
       if (address !== (user?.address || '')) payload.address = address;
+      if (discipline !== (user?.athlete_profile?.discipline || '')) payload.discipline = discipline;
+      if (weight !== (user?.athlete_profile?.weight || '')) payload.weight = weight;
+      if (bodyFat !== (user?.athlete_profile?.body_fat || '')) payload.body_fat = bodyFat;
+      
+      const currentFtp = user?.athlete_profile?.ftp || '';
+      if (String(ftp) !== String(currentFtp)) payload.ftp = ftp ? Number(ftp) : null;
+      
+      const newZonesStr = JSON.stringify(hrZones);
+      if (newZonesStr !== (user?.athlete_profile?.heart_rate_zones || '{}')) payload.heart_rate_zones = newZonesStr;
+      
+      const newInjuriesStr = injuries.length > 0 ? JSON.stringify(injuries) : '';
+      if (newInjuriesStr !== (user?.athlete_profile?.injuries || '')) payload.injuries = newInjuriesStr;
 
       if (Object.keys(payload).length === 0) {
         Alert.alert('Aviso', 'No hay cambios para guardar');
@@ -142,14 +170,14 @@ export default function ProfileScreen() {
 
       {/* Tabs */}
       <View style={styles.tabsContainer}>
-        {['Personal', 'Deportes', 'Ajustes'].map((tab) => (
+        {['Personal', 'Expediente', 'Ajustes'].map((tab) => (
           <TouchableOpacity 
             key={tab} 
             style={[styles.tabBtn, activeTab === tab && styles.tabBtnActive]}
             onPress={() => setActiveTab(tab)}
           >
             <Ionicons 
-              name={tab === 'Personal' ? 'person' : tab === 'Deportes' ? 'barbell' : 'settings'} 
+              name={tab === 'Personal' ? 'person' : tab === 'Expediente' ? 'pulse' : 'settings'} 
               size={16} 
               color={activeTab === tab ? '#000' : '#888'} 
               style={{ marginRight: 6 }} 
@@ -286,6 +314,118 @@ export default function ProfileScreen() {
         </View>
       )}
 
+      {activeTab === 'Expediente' && (
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Expediente Deportivo</Text>
+          <Text style={styles.sectionDesc}>Métricas, zonas e historial clínico.</Text>
+
+          {/* Disciplinas */}
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>DISCIPLINA(S) PRINCIPAL(ES)</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{gap: 10, paddingRight: 20}}>
+
+              {['triatlon', 'ciclismo', 'running', 'natacion'].map(d => {
+                const isSelected = discipline.split(',').includes(d);
+                return (
+                  <TouchableOpacity 
+                    key={d}
+                    style={[styles.chip, isSelected && styles.chipActive]}
+                    onPress={() => {
+                      let current = discipline ? discipline.split(',').filter(Boolean) : [];
+                      if (isSelected) current = current.filter(item => item !== d);
+                      else current.push(d);
+                      setDiscipline(current.join(','));
+                    }}
+                  >
+                    <Text style={[styles.chipText, isSelected && styles.chipTextActive]}>{d.charAt(0).toUpperCase() + d.slice(1)}</Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </ScrollView>
+          </View>
+
+          {/* Métricas */}
+          <View style={{flexDirection: 'row', gap: 12}}>
+            <View style={[styles.formGroup, {flex: 1}]}>
+              <Text style={styles.label}>PESO (kg)</Text>
+              <TextInput style={styles.input} value={weight} onChangeText={setWeight} keyboardType="numeric" placeholder="70.5" placeholderTextColor="#666" />
+            </View>
+            <View style={[styles.formGroup, {flex: 1}]}>
+              <Text style={styles.label}>% GRASA</Text>
+              <TextInput style={styles.input} value={bodyFat} onChangeText={setBodyFat} keyboardType="numeric" placeholder="15" placeholderTextColor="#666" />
+            </View>
+            <View style={[styles.formGroup, {flex: 1}]}>
+              <Text style={styles.label}>FTP (W)</Text>
+              <TextInput style={styles.input} value={ftp} onChangeText={setFtp} keyboardType="numeric" placeholder="250" placeholderTextColor="#666" />
+            </View>
+          </View>
+
+          {/* Zonas Cardíacas */}
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>ZONAS DE FRECUENCIA CARDÍACA (PPM)</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{gap: 12, marginTop: 8}}>
+              {['z1', 'z2', 'z3', 'z4', 'z5'].map((z, idx) => (
+                <View key={z} style={styles.zoneBox}>
+                  <Text style={styles.zoneLabel}>Z{idx + 1}</Text>
+                  <TextInput 
+                    style={styles.zoneInput}
+                    value={hrZones[z]}
+                    onChangeText={(val) => setHrZones({...hrZones, [z]: val})}
+                    placeholder="120-135"
+                    placeholderTextColor="#666"
+                    keyboardType="default"
+                  />
+                </View>
+              ))}
+            </ScrollView>
+          </View>
+
+          {/* Lesiones */}
+          <View style={styles.formGroup}>
+            <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12}}>
+              <Text style={[styles.label, {marginBottom: 0}]}>HISTORIAL DE LESIONES</Text>
+              <TouchableOpacity onPress={() => {
+                setCurrentInjury({ id: Date.now(), title: '', date: '', description: '', status: 'Activa' });
+                setShowInjuryModal(true);
+              }}>
+                <Text style={{color: Theme.colors.primary, fontWeight: 'bold', fontSize: 12}}>+ AÑADIR LESIÓN</Text>
+              </TouchableOpacity>
+            </View>
+
+            {injuries.length === 0 ? (
+              <View style={styles.emptyBox}>
+                <Ionicons name="pulse" size={32} color="#444" style={{marginBottom: 8}} />
+                <Text style={{color: '#888', fontWeight: 'bold'}}>Sin lesiones registradas.</Text>
+                <Text style={{color: '#666', fontSize: 12}}>¡Excelente trabajo manteniéndote sano!</Text>
+              </View>
+            ) : (
+              <View style={{gap: 12}}>
+                {injuries.map(injury => (
+                  <TouchableOpacity 
+                    key={injury.id} 
+                    style={styles.injuryCard}
+                    onPress={() => { setCurrentInjury(injury); setShowInjuryModal(true); }}
+                  >
+                    <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start'}}>
+                      <Text style={styles.injuryTitle}>{injury.title}</Text>
+                      <View style={[styles.injuryBadge, {backgroundColor: injury.status === 'Activa' ? 'rgba(239,68,68,0.2)' : injury.status === 'Recuperada' ? 'rgba(34,197,94,0.2)' : 'rgba(234,179,8,0.2)'}]}>
+                        <Text style={[styles.injuryBadgeText, {color: injury.status === 'Activa' ? '#ef4444' : injury.status === 'Recuperada' ? '#22c55e' : '#eab308'}]}>{injury.status}</Text>
+                      </View>
+                    </View>
+                    <Text style={styles.injuryDate}>{injury.date}</Text>
+                    <Text style={styles.injuryDesc}>{injury.description}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
+          </View>
+
+          <TouchableOpacity style={styles.saveBtn} onPress={handleSaveProfile} disabled={saving}>
+            {saving ? <ActivityIndicator color="#000" /> : <Text style={styles.saveBtnText}>Guardar Cambios</Text>}
+          </TouchableOpacity>
+        </View>
+      )}
+
       {activeTab === 'Ajustes' && (
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Seguridad y Suscripción</Text>
@@ -324,6 +464,92 @@ export default function ProfileScreen() {
         <Text style={styles.logoutText}>Cerrar Sesión</Text>
       </TouchableOpacity>
     
+      
+      {/* Injury Modal */}
+      {showInjuryModal && currentInjury && (
+        <Modal transparent visible animationType="slide">
+          <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.8)', justifyContent: 'flex-end' }}>
+            <View style={{ backgroundColor: '#111', padding: 24, borderTopLeftRadius: 24, borderTopRightRadius: 24, minHeight: '60%' }}>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+                <Text style={{ color: '#fff', fontSize: 18, fontWeight: 'bold' }}>Detalle de Lesión</Text>
+                <TouchableOpacity onPress={() => setShowInjuryModal(false)}>
+                  <Ionicons name="close" size={24} color="#666" />
+                </TouchableOpacity>
+              </View>
+              
+              <Text style={[styles.label, {fontSize: 12}]}>TÍTULO</Text>
+              <TextInput 
+                style={[styles.input, {marginBottom: 16}]} 
+                value={currentInjury.title} 
+                onChangeText={t => setCurrentInjury({...currentInjury, title: t})}
+                placeholder="Ej: Esguince" 
+                placeholderTextColor="#666"
+              />
+
+              <Text style={[styles.label, {fontSize: 12}]}>FECHA (YYYY-MM-DD)</Text>
+              <TextInput 
+                style={[styles.input, {marginBottom: 16}]} 
+                value={currentInjury.date} 
+                onChangeText={t => setCurrentInjury({...currentInjury, date: t})}
+                placeholder="2023-05-10" 
+                placeholderTextColor="#666"
+              />
+
+              <Text style={[styles.label, {fontSize: 12}]}>DESCRIPCIÓN</Text>
+              <TextInput 
+                style={[styles.input, {marginBottom: 16, height: 80, textAlignVertical: 'top'}]} 
+                value={currentInjury.description} 
+                onChangeText={t => setCurrentInjury({...currentInjury, description: t})}
+                placeholder="Detalles..." 
+                placeholderTextColor="#666"
+                multiline
+              />
+
+              <Text style={[styles.label, {fontSize: 12}]}>ESTADO</Text>
+              <View style={{flexDirection: 'row', gap: 10, marginBottom: 24}}>
+                {['Activa', 'En Tratamiento', 'Recuperada'].map(s => (
+                  <TouchableOpacity 
+                    key={s} 
+                    style={[styles.chip, currentInjury.status === s && styles.chipActive]}
+                    onPress={() => setCurrentInjury({...currentInjury, status: s})}
+                  >
+                    <Text style={[styles.chipText, currentInjury.status === s && styles.chipTextActive]}>{s}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+
+              <View style={{flexDirection: 'row', gap: 12}}>
+                <TouchableOpacity 
+                  style={[styles.saveBtn, {flex: 1, backgroundColor: '#333'}]}
+                  onPress={() => {
+                    const newInjuries = injuries.filter(i => i.id !== currentInjury.id);
+                    setInjuries(newInjuries);
+                    setShowInjuryModal(false);
+                  }}
+                >
+                  <Text style={[styles.saveBtnText, {color: '#ff4444'}]}>Eliminar</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity 
+                  style={[styles.saveBtn, {flex: 1}]}
+                  onPress={() => {
+                    const exists = injuries.find(i => i.id === currentInjury.id);
+                    if (exists) {
+                      setInjuries(injuries.map(i => i.id === currentInjury.id ? currentInjury : i));
+                    } else {
+                      setInjuries([...injuries, currentInjury]);
+                    }
+                    setShowInjuryModal(false);
+                  }}
+                >
+                  <Text style={styles.saveBtnText}>Guardar</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
+      )}
+
       {/* Custom Select Modal */}
       {selectOptions && (
         <Modal transparent visible animationType="fade">
@@ -546,5 +772,92 @@ const styles = StyleSheet.create({
     color: '#000',
     fontWeight: 'bold',
     fontSize: 16,
+  },
+
+  chip: {
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
+    borderRadius: 20,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+  },
+  chipActive: {
+    backgroundColor: 'rgba(0,180,216,0.15)',
+    borderColor: '#00b4d8',
+  },
+  chipText: {
+    color: '#888',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  chipTextActive: {
+    color: '#00b4d8',
+  },
+  zoneBox: {
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
+    borderRadius: 12,
+    padding: 10,
+    width: 80,
+    alignItems: 'center',
+  },
+  zoneLabel: {
+    color: '#00b4d8',
+    fontWeight: '900',
+    fontSize: 12,
+    marginBottom: 6,
+  },
+  zoneInput: {
+    color: '#fff',
+    fontSize: 14,
+    textAlign: 'center',
+    width: '100%',
+    padding: 4,
+    backgroundColor: 'rgba(0,0,0,0.3)',
+    borderRadius: 6,
+  },
+  emptyBox: {
+    backgroundColor: 'rgba(255,255,255,0.03)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.05)',
+    borderStyle: 'dashed',
+    borderRadius: 16,
+    padding: 30,
+    alignItems: 'center',
+  },
+  injuryCard: {
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
+    borderRadius: 16,
+    padding: 16,
+  },
+  injuryTitle: {
+    color: '#00b4d8',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  injuryBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
+  injuryBadgeText: {
+    fontSize: 10,
+    fontWeight: 'bold',
+    textTransform: 'uppercase',
+  },
+  injuryDate: {
+    color: '#666',
+    fontSize: 12,
+    fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
+    marginTop: 4,
+    marginBottom: 8,
+  },
+  injuryDesc: {
+    color: '#ccc',
+    fontSize: 14,
   },
 });
