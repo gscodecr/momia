@@ -10,6 +10,12 @@ interface User {
   first_name: string;
   last_name: string;
   avatar_url?: string;
+  phone?: string;
+  birth_date?: string;
+  gender?: string;
+  payment_preference?: string;
+  subscription_type?: string;
+  address?: string;
   role: {
     name: string;
   };
@@ -20,6 +26,7 @@ interface AuthContextType {
   isLoading: boolean;
   login: (token: string, userData: User) => Promise<void>;
   logout: () => Promise<void>;
+  refreshUser: () => Promise<void>;
 }
 
 export const AuthContext = createContext<AuthContextType>({
@@ -27,6 +34,7 @@ export const AuthContext = createContext<AuthContextType>({
   isLoading: true,
   login: async () => {},
   logout: async () => {},
+  refreshUser: async () => {},
 });
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
@@ -34,32 +42,33 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
+  const loadUser = async () => {
+    try {
+      let token: string | null = null;
+      if (Platform.OS === 'web') {
+        token = localStorage.getItem('token');
+      } else {
+        token = await SecureStore.getItemAsync('token');
+      }
+
+      if (token) {
+        const res = await api.get('/auth/me');
+        setUser(res.data);
+      }
+    } catch (e) {
+      console.log('Failed to load session:', e);
+      if (Platform.OS === 'web') {
+        localStorage.removeItem('token');
+      } else {
+        await SecureStore.deleteItemAsync('token');
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
     // Check if user is already logged in
-    const loadUser = async () => {
-      try {
-        let token: string | null = null;
-        if (Platform.OS === 'web') {
-          token = localStorage.getItem('token');
-        } else {
-          token = await SecureStore.getItemAsync('token');
-        }
-
-        if (token) {
-          const res = await api.get('/auth/me');
-          setUser(res.data);
-        }
-      } catch (e) {
-        console.log('Failed to load session:', e);
-        if (Platform.OS === 'web') {
-          localStorage.removeItem('token');
-        } else {
-          await SecureStore.deleteItemAsync('token');
-        }
-      } finally {
-        setIsLoading(false);
-      }
-    };
     loadUser();
   }, []);
 
@@ -84,7 +93,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, logout }}>
+    <AuthContext.Provider value={{ user, isLoading, login, logout, refreshUser: loadUser }}>
       {children}
     </AuthContext.Provider>
   );

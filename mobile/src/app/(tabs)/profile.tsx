@@ -1,9 +1,10 @@
 import React, { useContext, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, TextInput, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, TextInput, Alert, ActivityIndicator, Modal, Platform } from 'react-native';
 import { AuthContext } from '../../context/AuthContext';
 import { Theme } from '../../constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import api from '../../services/api';
 
 export default function ProfileScreen() {
@@ -11,6 +12,55 @@ export default function ProfileScreen() {
   const [avatarUrl, setAvatarUrl] = useState(user?.avatar_url || '');
   const [activeTab, setActiveTab] = useState('Personal');
   const [uploading, setUploading] = useState(false);
+  
+  // Personal Data State
+  const { refreshUser } = useContext(AuthContext);
+  const [firstName, setFirstName] = useState(user?.first_name || '');
+  const [lastName, setLastName] = useState(user?.last_name || '');
+  const [phone, setPhone] = useState(user?.phone || '');
+  const [birthDate, setBirthDate] = useState(user?.birth_date || '');
+  const [gender, setGender] = useState(user?.gender || '');
+  const [paymentPreference, setPaymentPreference] = useState(user?.payment_preference || '');
+  const [subscriptionType, setSubscriptionType] = useState(user?.subscription_type || '');
+  const [address, setAddress] = useState(user?.address || '');
+  
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  
+  const [saving, setSaving] = useState(false);
+  
+  // Custom Select Modal State
+  const [selectOptions, setSelectOptions] = useState<{title: string, options: string[], onSelect: (val: string) => void} | null>(null);
+
+  const handleSaveProfile = async () => {
+    setSaving(true);
+    try {
+      const payload: any = {};
+      if (firstName !== (user?.first_name || '')) payload.first_name = firstName;
+      if (lastName !== (user?.last_name || '')) payload.last_name = lastName;
+      if (phone !== (user?.phone || '')) payload.phone = phone;
+      if (birthDate !== (user?.birth_date || '')) payload.birth_date = birthDate;
+      if (gender !== (user?.gender || '')) payload.gender = gender;
+      if (paymentPreference !== (user?.payment_preference || '')) payload.payment_preference = paymentPreference;
+      if (subscriptionType !== (user?.subscription_type || '')) payload.subscription_type = subscriptionType;
+      if (address !== (user?.address || '')) payload.address = address;
+
+      if (Object.keys(payload).length === 0) {
+        Alert.alert('Aviso', 'No hay cambios para guardar');
+        setSaving(false);
+        return;
+      }
+
+      const res = await api.put('/auth/me', payload);
+      if (res.data) {
+        Alert.alert('Éxito', 'Perfil actualizado correctamente');
+        await refreshUser();
+      }
+    } catch (e) {
+      Alert.alert('Error', 'No se pudo actualizar el perfil');
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const handlePickImage = async () => {
     const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -109,42 +159,192 @@ export default function ProfileScreen() {
         ))}
       </View>
 
-      {/* Settings Content */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Seguridad y Suscripción</Text>
-        <Text style={styles.sectionDesc}>Gestiona tu acceso y contactos vitales.</Text>
+      {/* Tab Content */}
+      {activeTab === 'Personal' && (
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Datos Personales</Text>
+          <Text style={styles.sectionDesc}>Información básica de tu cuenta.</Text>
 
-        <View style={styles.subscriptionCard}>
-          <View style={styles.subIconBadge}>
-            <Ionicons name="shield-checkmark" size={20} color={Theme.colors.primary} />
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>NOMBRE</Text>
+            <TextInput style={styles.input} value={firstName} onChangeText={setFirstName} placeholder="Tu nombre" placeholderTextColor="#666" />
           </View>
-          <View style={styles.subContent}>
-            <Text style={styles.subTitle}>Suscripción Activa</Text>
-            <Text style={styles.subDesc}>Facturación automática configurada</Text>
+
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>APELLIDO</Text>
+            <TextInput style={styles.input} value={lastName} onChangeText={setLastName} placeholder="Tu apellido" placeholderTextColor="#666" />
+          </View>
+          
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>CORREO ELECTRÓNICO (LOGIN)</Text>
+            <TextInput style={[styles.input, { opacity: 0.5 }]} value={user?.email || ''} editable={false} placeholderTextColor="#666" />
+            <Text style={{color: '#666', fontSize: 12, marginTop: 4}}>No modificable por seguridad.</Text>
+          </View>
+
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>CELULAR</Text>
+            <TextInput style={styles.input} value={phone} onChangeText={setPhone} keyboardType="phone-pad" placeholder="+506 8888-8888" placeholderTextColor="#666" />
+          </View>
+
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>FECHA DE NACIMIENTO (YYYY-MM-DD)</Text>
+            <TouchableOpacity style={styles.selectBtn} onPress={() => setShowDatePicker(true)}>
+              <Text style={styles.selectBtnText}>{birthDate || 'Ej. 1990-05-20'}</Text>
+              <Ionicons name="calendar" size={16} color="#666" />
+            </TouchableOpacity>
+            {showDatePicker && (
+              Platform.OS === 'ios' ? (
+                <Modal transparent visible animationType="fade">
+                  <View style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.5)' }}>
+                    <View style={{ backgroundColor: '#fff', paddingBottom: 20 }}>
+                      <View style={{ flexDirection: 'row', justifyContent: 'flex-end', padding: 16, borderBottomWidth: 1, borderBottomColor: '#eee' }}>
+                        <TouchableOpacity onPress={() => setShowDatePicker(false)}>
+                          <Text style={{ color: '#007AFF', fontWeight: 'bold', fontSize: 16 }}>Hecho</Text>
+                        </TouchableOpacity>
+                      </View>
+                      <DateTimePicker
+                        value={birthDate ? new Date(birthDate + 'T12:00:00Z') : new Date(1990, 0, 1)}
+                        mode="date"
+                        display="spinner"
+                        textColor="#000"
+                        onChange={(event, date) => {
+                          if (date) {
+                            setBirthDate(date.toISOString().split('T')[0]);
+                          }
+                        }}
+                      />
+                    </View>
+                  </View>
+                </Modal>
+              ) : (
+                <DateTimePicker
+                  value={birthDate ? new Date(birthDate + 'T12:00:00Z') : new Date(1990, 0, 1)}
+                  mode="date"
+                  display="default"
+                  onChange={(event, date) => {
+                    setShowDatePicker(false);
+                    if (date) {
+                      setBirthDate(date.toISOString().split('T')[0]);
+                    }
+                  }}
+                />
+              )
+            )}
+          </View>
+
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>GÉNERO</Text>
+            <TouchableOpacity style={styles.selectBtn} onPress={() => setSelectOptions({
+              title: 'Selecciona tu género',
+              options: ['Masculino', 'Femenino', 'Otro', 'Prefiero no decirlo'],
+              onSelect: setGender
+            })}>
+              <Text style={styles.selectBtnText}>{gender || 'Selecciona tu género'}</Text>
+              <Ionicons name="chevron-down" size={16} color="#666" />
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>PREFERENCIA DE PAGO</Text>
+            <TouchableOpacity style={styles.selectBtn} onPress={() => setSelectOptions({
+              title: 'Selecciona método',
+              options: ['Tarjeta', 'Transferencia', 'Sinpe'],
+              onSelect: setPaymentPreference
+            })}>
+              <Text style={styles.selectBtnText}>{paymentPreference || 'Selecciona un método'}</Text>
+              <Ionicons name="chevron-down" size={16} color="#666" />
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>TIPO DE SUSCRIPCIÓN</Text>
+            <TouchableOpacity style={styles.selectBtn} onPress={() => setSelectOptions({
+              title: 'Tipo de Suscripción',
+              options: ['Mensual', 'Trimestral', 'Semestral', 'Anual'],
+              onSelect: setSubscriptionType
+            })}>
+              <Text style={styles.selectBtnText}>{subscriptionType || 'Selecciona un tipo'}</Text>
+              <Ionicons name="chevron-down" size={16} color="#666" />
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>DIRECCIÓN</Text>
+            <TextInput 
+              style={[styles.input, { height: 100, textAlignVertical: 'top' }]} 
+              value={address} 
+              onChangeText={setAddress} 
+              multiline 
+              placeholder="Provincia, Cantón, Distrito..." 
+              placeholderTextColor="#666" 
+            />
+          </View>
+          
+          <TouchableOpacity style={styles.saveBtn} onPress={handleSaveProfile} disabled={saving}>
+            {saving ? <ActivityIndicator color="#000" /> : <Text style={styles.saveBtnText}>Guardar Cambios</Text>}
+          </TouchableOpacity>
+        </View>
+      )}
+
+      {activeTab === 'Ajustes' && (
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Seguridad y Suscripción</Text>
+          <Text style={styles.sectionDesc}>Gestiona tu acceso y contactos vitales.</Text>
+
+          <View style={styles.subscriptionCard}>
+            <View style={styles.subIconBadge}>
+              <Ionicons name="shield-checkmark" size={20} color={'#00b4d8'} />
+            </View>
+            <View style={styles.subContent}>
+              <Text style={styles.subTitle}>Suscripción Activa</Text>
+              <Text style={styles.subDesc}>Facturación automática configurada</Text>
+            </View>
+          </View>
+
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>CONTACTO DE EMERGENCIA (NOMBRE)</Text>
+            <TextInput style={styles.input} placeholderTextColor="#666" />
+          </View>
+
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>CONTACTO DE EMERGENCIA (TELÉFONO)</Text>
+            <TextInput style={styles.input} placeholderTextColor="#666" keyboardType="phone-pad" />
+          </View>
+
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>CAMBIAR CONTRASEÑA</Text>
+            <TextInput style={styles.input} placeholderTextColor="#666" secureTextEntry />
           </View>
         </View>
-
-        <View style={styles.formGroup}>
-          <Text style={styles.label}>CONTACTO DE EMERGENCIA (NOMBRE)</Text>
-          <TextInput style={styles.input} placeholderTextColor="#666" />
-        </View>
-
-        <View style={styles.formGroup}>
-          <Text style={styles.label}>CONTACTO DE EMERGENCIA (TELÉFONO)</Text>
-          <TextInput style={styles.input} placeholderTextColor="#666" keyboardType="phone-pad" />
-        </View>
-
-        <View style={styles.formGroup}>
-          <Text style={styles.label}>CAMBIAR CONTRASEÑA</Text>
-          <TextInput style={styles.input} placeholderTextColor="#666" secureTextEntry />
-        </View>
-      </View>
+      )}
 
       {/* Logout button at the very bottom */}
       <TouchableOpacity style={styles.logoutButton} onPress={logout}>
         <Ionicons name="log-out" size={20} color={Theme.colors.error} style={{ marginRight: 8 }} />
         <Text style={styles.logoutText}>Cerrar Sesión</Text>
       </TouchableOpacity>
+    
+      {/* Custom Select Modal */}
+      {selectOptions && (
+        <Modal transparent visible animationType="fade">
+          <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'center', alignItems: 'center' }}>
+            <View style={{ backgroundColor: '#1a1a1a', width: '80%', borderRadius: 16, padding: 20, borderWidth: 1, borderColor: '#333' }}>
+            <Text style={{ color: '#fff', fontSize: 18, fontWeight: 'bold', marginBottom: 16 }}>{selectOptions.title}</Text>
+            {selectOptions.options.map(opt => (
+              <TouchableOpacity key={opt} style={{ paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: '#333', alignItems: 'center' }} onPress={() => {
+                selectOptions.onSelect(opt);
+                setSelectOptions(null);
+              }}>
+                <Text style={{ color: '#fff', fontSize: 16, textAlign: 'center' }}>{opt}</Text>
+              </TouchableOpacity>
+            ))}
+            <TouchableOpacity style={{ marginTop: 20, alignItems: 'center' }} onPress={() => setSelectOptions(null)}>
+              <Text style={{ color: '#ff4444', fontWeight: 'bold' }}>Cancelar</Text>
+            </TouchableOpacity>
+          </View>
+          </View>
+        </Modal>
+      )}
     </ScrollView>
   );
 }
@@ -157,7 +357,7 @@ const styles = StyleSheet.create({
   content: {
     padding: 20,
     paddingTop: 60,
-    paddingBottom: 40,
+    paddingBottom: 120,
   },
   header: {
     alignItems: 'center',
@@ -319,5 +519,32 @@ const styles = StyleSheet.create({
     color: Theme.colors.error,
     fontWeight: 'bold',
     fontSize: 16,
-  }
+  },
+
+  selectBtn: {
+    backgroundColor: '#111',
+    borderWidth: 1,
+    borderColor: '#333',
+    borderRadius: 8,
+    padding: 14,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  selectBtnText: {
+    color: '#fff',
+    fontSize: 16,
+  },
+  saveBtn: {
+    backgroundColor: Theme.colors.primary,
+    padding: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  saveBtnText: {
+    color: '#000',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
 });
