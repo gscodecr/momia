@@ -21,9 +21,15 @@ models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Momia TS API")
 
+# En producción, configurar MOMIA_CORS_ORIGINS en .env (ej. "https://midominio.com,https://app.midominio.com")
+cors_origins_env = os.getenv("MOMIA_CORS_ORIGINS", "")
+allowed_origins = [origin.strip() for origin in cors_origins_env.split(",") if origin.strip()]
+if not allowed_origins:
+    allowed_origins = ["http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:3001"]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:3001"],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

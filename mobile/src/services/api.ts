@@ -2,9 +2,13 @@ import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 import { Platform } from 'react-native';
 
-// Dynamically determine the backend URL based on the platform and environment
 const getBaseUrl = () => {
-  // If running on an Android emulator, localhost is 10.0.2.2
+  // Use EXPO_PUBLIC_API_URL if defined (useful for testing on physical devices)
+  if (process.env.EXPO_PUBLIC_API_URL) {
+    return process.env.EXPO_PUBLIC_API_URL;
+  }
+  
+  // Fallback defaults
   if (Platform.OS === 'android') {
     return 'http://10.0.2.2:8001';
   }

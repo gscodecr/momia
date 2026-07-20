@@ -78,8 +78,10 @@ export default function DashboardLayout({ children }: LayoutProps) {
       const interval = setInterval(fetchNotifications, 30000); // poll every 30s
       
       window.addEventListener('profileUpdated', fetchUserData);
+      window.addEventListener('refreshNotifications', fetchNotifications);
       return () => {
         window.removeEventListener('profileUpdated', fetchUserData);
+        window.removeEventListener('refreshNotifications', fetchNotifications);
         clearInterval(interval);
       };
     }
@@ -109,6 +111,22 @@ export default function DashboardLayout({ children }: LayoutProps) {
     }).then(() => {
       setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
     });
+  };
+
+  const handleNotificationClick = (notif: any) => {
+    if (!notif.is_read) {
+      markAsRead(notif.id);
+    }
+    setIsNotificationsOpen(false);
+    if (notif.type === 'CHAT') {
+      if (notif.related_id) {
+        router.push(`/messages?contact=${notif.related_id}`);
+      } else {
+        router.push('/messages');
+      }
+    } else if (notif.type === 'EVENT') {
+      router.push('/events');
+    }
   };
 
   const unreadCount = notifications.filter(n => !n.is_read).length;
@@ -213,13 +231,13 @@ export default function DashboardLayout({ children }: LayoutProps) {
                 )}
               </div>
               <div className="max-h-80 overflow-y-auto">
-                {notifications.length === 0 ? (
+                {notifications.filter(n => !(n.type === 'CHAT' && n.is_read)).length === 0 ? (
                   <div className="p-4 text-center text-sm opacity-50">No tienes notificaciones</div>
                 ) : (
-                  notifications.map(notif => (
+                  notifications.filter(n => !(n.type === 'CHAT' && n.is_read)).map(notif => (
                     <div 
                       key={notif.id}
-                      onClick={() => !notif.is_read && markAsRead(notif.id)}
+                      onClick={() => handleNotificationClick(notif)}
                       className={`p-4 border-b border-white/5 cursor-pointer transition-colors ${notif.is_read ? 'opacity-60 hover:bg-white/5' : 'bg-white/5 hover:bg-white/10'}`}
                     >
                       <div className="flex justify-between items-start mb-1">

@@ -5,9 +5,13 @@ import { ActivityIndicator, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Theme } from '../../constants/theme';
 import { BlurView } from 'expo-blur';
+import { usePushNotifications } from '../../hooks/usePushNotifications';
 
 export default function TabsLayout() {
   const { user, isLoading } = useContext(AuthContext);
+  
+  // Registrar el dispositivo para notificaciones push cuando el usuario está logueado
+  usePushNotifications(user);
 
   if (isLoading) {
     return (
@@ -68,6 +72,16 @@ export default function TabsLayout() {
           tabBarLabel: 'Perfil',
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="person" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="chat"
+        options={{
+          title: 'Chat',
+          tabBarLabel: 'Chat',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="chatbubbles" size={size} color={color} />
           ),
         }}
       />

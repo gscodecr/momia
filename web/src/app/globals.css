@@ -80,3 +80,12 @@ body {
   transform: translateY(-5px);
   border-color: rgba(13, 131, 177, 0.4); /* Brillo azul al hover */
 }
+
+/* Glass panel sin animaciones hover para layouts estáticos */
+.glass-panel {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+}

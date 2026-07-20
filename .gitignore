@@ -66,3 +66,18 @@ yarn-error.log*
 uploads/
 media/
 public/uploads/
+
+# =========================
+# Scripts Temporales y Pruebas
+# =========================
+*_test.py
+test_*.py
+scripts/temp_*
+
+# =========================
+# Mobile (Expo)
+# =========================
+mobile/.expo/
+mobile/node_modules/
+mobile/dist/
+mobile/web-build/

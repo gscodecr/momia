@@ -37,6 +37,7 @@ class User(Base):
     auto_pay = Column(Boolean, default=False)
     emergency_contact_name = Column(String, nullable=True)
     emergency_contact_phone = Column(String, nullable=True)
+    push_token = Column(String, nullable=True) # Expo push token
     
     role_id = Column(Integer, ForeignKey("roles.id", ondelete="SET NULL"))
     role = relationship("Role", back_populates="users")
@@ -128,9 +129,9 @@ class Workout(Base):
     __tablename__ = "workouts"
     
     id = Column(Integer, primary_key=True, index=True)
-    coach_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"))
-    athlete_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"))
-    event_id = Column(Integer, ForeignKey("events.id", ondelete="SET NULL"), nullable=True)
+    coach_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    athlete_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    event_id = Column(Integer, ForeignKey("events.id", ondelete="SET NULL"), nullable=True, index=True)
     title = Column(String)
     description = Column(String)
     scheduled_date = Column(DateTime)
@@ -161,10 +162,11 @@ class Notification(Base):
     __tablename__ = "notifications"
     
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"))
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), index=True)
     title = Column(String)
     message = Column(String)
-    type = Column(String) # e.g., 'PAYMENT', 'WORKOUT', 'EVENT', 'SYSTEM'
+    type = Column(String) # e.g., 'PAYMENT', 'WORKOUT', 'EVENT', 'SYSTEM', 'CHAT'
+    related_id = Column(Integer, nullable=True) # ID to reference specific items (e.g. sender_id for CHAT)
     is_read = Column(Boolean, default=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     
@@ -185,3 +187,17 @@ class NetworkItem(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     
     user = relationship("User")
+
+class Message(Base):
+    __tablename__ = "messages"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    sender_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    target_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    content = Column(String, nullable=True) # Text content
+    image_url = Column(String, nullable=True) # Image attachment
+    is_read = Column(Boolean, default=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    
+    sender = relationship("User", foreign_keys=[sender_id])
+    target = relationship("User", foreign_keys=[target_id])

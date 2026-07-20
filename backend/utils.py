@@ -56,4 +56,44 @@ def create_notification(db: Session, user_id: int, title: str, message: str, not
     db.add(notif)
     db.commit()
     db.refresh(notif)
+    
+    # Try sending push notification if user has a push token
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if user and getattr(user, 'push_token', None):
+        send_push_notification(user.push_token, title, message)
+        
     return notif
+
+def send_push_notification(expo_push_token: str, title: str, body: str, data: dict = None):
+    """
+    Sends a push notification using the Expo Push API.
+    """
+    import urllib.request
+    import json
+    
+    url = 'https://exp.host/--/api/v2/push/send'
+    headers = {
+        'Accept': 'application/json',
+        'Accept-encoding': 'gzip, deflate',
+        'Content-Type': 'application/json',
+    }
+    
+    payload = {
+        'to': expo_push_token,
+        'sound': 'default',
+        'title': title,
+        'body': body,
+    }
+    if data:
+        payload['data'] = data
+        
+    data = json.dumps(payload).encode('utf-8')
+    req = urllib.request.Request(url, data=data, headers=headers, method='POST')
+    
+    try:
+        with urllib.request.urlopen(req) as response:
+            res = response.read()
+            return True
+    except Exception as e:
+        print(f"Error sending push notification: {e}")
+        return False
