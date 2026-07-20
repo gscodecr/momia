@@ -106,13 +106,18 @@ export default function WorkoutsScreen() {
           <Text style={styles.headerTitle}>Mi Plan</Text>
           <Text style={styles.subtitle}>Sigue tus rutinas diarias</Text>
         </View>
-        <View style={styles.weekNav}>
-          <TouchableOpacity onPress={prevWeek} style={styles.navBtn}>
-            <Ionicons name="chevron-back" size={20} color={Theme.colors.foreground} />
-          </TouchableOpacity>
-          <TouchableOpacity onPress={nextWeek} style={styles.navBtn}>
-            <Ionicons name="chevron-forward" size={20} color={Theme.colors.foreground} />
-          </TouchableOpacity>
+        <View style={{ alignItems: 'flex-end' }}>
+          <Text style={{ color: Theme.colors.primary, fontSize: 14, fontWeight: 'bold', marginBottom: 8, textTransform: 'capitalize' }}>
+            {currentWeekStart.toLocaleDateString('es-CR', { month: 'long', year: 'numeric' })}
+          </Text>
+          <View style={styles.weekNav}>
+            <TouchableOpacity onPress={prevWeek} style={styles.navBtn}>
+              <Ionicons name="chevron-back" size={20} color={Theme.colors.foreground} />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={nextWeek} style={styles.navBtn}>
+              <Ionicons name="chevron-forward" size={20} color={Theme.colors.foreground} />
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
 

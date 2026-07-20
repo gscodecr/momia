@@ -718,7 +718,7 @@ export default function ProfileScreen() {
 
               <Text style={[styles.label, {fontSize: 12}]}>ESTADO</Text>
               <View style={{flexDirection: 'row', gap: 10, marginBottom: 24}}>
-                {['Activa', 'En Tratamiento', 'Recuperada'].map(s => (
+                {['Activa', 'Observación', 'Recuperada'].map(s => (
                   <TouchableOpacity 
                     key={s} 
                     style={[styles.chip, currentInjury.status === s && styles.chipActive]}

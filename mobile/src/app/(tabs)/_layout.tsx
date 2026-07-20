@@ -71,6 +71,17 @@ export default function TabsLayout() {
           ),
         }}
       />
+      <Tabs.Screen
+        name="coach"
+        options={{
+          title: 'Coach',
+          tabBarLabel: 'Coach',
+          href: (user.role?.name === 'admin' || user.role?.name === 'coach') ? '/coach' : null,
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="people" size={size} color={color} />
+          ),
+        }}
+      />
     </Tabs>
   );
 }
