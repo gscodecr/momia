@@ -48,7 +48,7 @@ export default function LoginScreen() {
         colors={[Theme.colors.background, Theme.colors.surface, '#000000']}
         style={StyleSheet.absoluteFillObject}
       />
-      <View style={styles.radialGlow} />
+      <Image source={require('../../assets/images/logo.png')} style={styles.radialGlow} resizeMode="contain" />
 
       <BlurView intensity={30} tint="dark" style={styles.glassCard}>
         <Image source={require('../../assets/images/logo.png')} style={styles.logo} resizeMode="contain" />
@@ -96,8 +96,6 @@ const styles = StyleSheet.create({
     left: '10%',
     width: 300,
     height: 300,
-    borderRadius: 150,
-    backgroundColor: Theme.colors.primary,
     opacity: 0.15,
   },
   glassCard: {

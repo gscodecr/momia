@@ -211,7 +211,11 @@ export default function DashboardScreen() {
             colors={['#1a1a1a', '#000000']}
             style={StyleSheet.absoluteFill}
           />
-          <View style={styles.radialGlow} />
+          <Image 
+            source={require('../../../assets/images/logo.png')} 
+            style={[styles.radialGlow, { transform: [{ rotate: '-25deg' }, { scale: 1.2 }] }]} 
+            resizeMode="contain" 
+          />
 
           <View style={styles.heroContent}>
             <View style={styles.badge}>
@@ -576,13 +580,11 @@ const styles = StyleSheet.create({
   },
   radialGlow: {
     position: 'absolute',
-    bottom: -50,
-    right: -20,
+    bottom: -30,
+    right: -40,
     width: 200,
     height: 200,
-    borderRadius: 100,
-    backgroundColor: Theme.colors.primary,
-    opacity: 0.2,
+    opacity: 0.15,
   },
   heroContent: {
     padding: Theme.spacing.lg,
