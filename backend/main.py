@@ -15,6 +15,7 @@ from marketplace import router as marketplace_router
 from events import router as events_router
 from workouts import router as workouts_router
 from routers.notifications import router as notifications_router
+from routers.network import router as network_router
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -39,6 +40,7 @@ app.include_router(marketplace_router)
 app.include_router(events_router)
 app.include_router(workouts_router)
 app.include_router(notifications_router)
+app.include_router(network_router)
 
 @app.get("/")
 def read_root():

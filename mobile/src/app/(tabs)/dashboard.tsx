@@ -320,6 +320,39 @@ export default function DashboardScreen() {
             }}
           />
         </View>
+
+        {/* Network Momia */}
+        <View style={[styles.sectionContainer, { marginBottom: 40 }]}>
+          <TouchableOpacity 
+            style={{
+              backgroundColor: 'rgba(0,180,216,0.1)',
+              borderRadius: 16,
+              padding: 20,
+              flexDirection: 'row',
+              alignItems: 'center',
+              borderWidth: 1,
+              borderColor: 'rgba(0,180,216,0.3)',
+            }}
+            onPress={() => router.push('/network')}
+          >
+            <View style={{
+              width: 48,
+              height: 48,
+              borderRadius: 24,
+              backgroundColor: Theme.colors.primary,
+              justifyContent: 'center',
+              alignItems: 'center',
+              marginRight: 16
+            }}>
+              <Ionicons name="globe" size={24} color="#000" />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={{ color: '#fff', fontSize: 18, fontWeight: 'bold', marginBottom: 4 }}>Network Momia</Text>
+              <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 13 }}>Descubre productos y servicios de nuestra comunidad</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={24} color={Theme.colors.primary} />
+          </TouchableOpacity>
+        </View>
       </ScrollView>
 
       {/* Floating Cart Button */}

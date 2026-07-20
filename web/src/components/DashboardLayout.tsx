@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { Home, Users, CreditCard, LayoutDashboard, Calendar, ShoppingBag, Bell, MessageCircle, Menu, X, LogOut, Activity } from 'lucide-react';
+import { Home, Users, CreditCard, LayoutDashboard, Calendar, ShoppingBag, Bell, MessageCircle, Menu, X, LogOut, Activity, Globe } from 'lucide-react';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -138,6 +138,7 @@ export default function DashboardLayout({ children }: LayoutProps) {
     // --- Shared Routes ---
     { label: 'Eventos', href: '/events', icon: Calendar },
     { label: 'Mensajes', href: '/messages', icon: MessageCircle },
+    { label: 'Network Momia', href: '/network', icon: Globe },
   ];
 
   // Close dropdowns if clicking outside would be nice, but for simplicity we toggle

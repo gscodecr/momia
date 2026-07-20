@@ -169,3 +169,19 @@ class Notification(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     
     user = relationship("User")
+
+class NetworkItem(Base):
+    __tablename__ = "network_items"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"))
+    title = Column(String)
+    description = Column(String)
+    photo_url = Column(String, nullable=True)
+    contact_name = Column(String)
+    contact_phone = Column(String, nullable=True)
+    contact_email = Column(String, nullable=True)
+    category = Column(String, nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    
+    user = relationship("User")

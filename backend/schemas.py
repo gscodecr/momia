@@ -282,3 +282,24 @@ class OrderOut(OrderBase):
 
     class Config:
         from_attributes = True
+
+# --- Network Momia ---
+class NetworkItemBase(BaseModel):
+    title: str
+    description: str
+    contact_name: str
+    contact_phone: Optional[str] = None
+    contact_email: Optional[str] = None
+    category: Optional[str] = None
+
+class NetworkItemCreate(NetworkItemBase):
+    pass
+
+class NetworkItemResponse(NetworkItemBase):
+    id: int
+    user_id: int
+    photo_url: Optional[str] = None
+    created_at: datetime
+    
+    class Config:
+        from_attributes = True
