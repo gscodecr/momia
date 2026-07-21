@@ -171,7 +171,11 @@ export default function AdminUsers() {
     return roleName === 'coach' || roleName === 'admin';
   });
   const filteredUsers = users.filter(u => {
-    const matchRole = roleFilter === 'Todos' || u.role?.name?.toLowerCase() === roleFilter.toLowerCase();
+    let matchRole = false;
+    if (roleFilter === 'Todos') matchRole = true;
+    else if (roleFilter === 'Pendientes') matchRole = !u.is_approved;
+    else matchRole = u.role?.name?.toLowerCase() === roleFilter.toLowerCase();
+    
     const searchStr = `${u.first_name} ${u.last_name} ${u.email}`.toLowerCase();
     const matchSearch = searchQuery.trim() === '' || searchStr.includes(searchQuery.toLowerCase());
     return matchRole && matchSearch;
@@ -195,7 +199,7 @@ export default function AdminUsers() {
 
       <div className="flex flex-col md:flex-row gap-4 mb-6">
         <div className="flex gap-2 overflow-x-auto pb-2 flex-1">
-          {['Todos', 'Admin', 'Coach', 'Athlete'].map(filter => (
+          {['Todos', 'Pendientes', 'Admin', 'Coach', 'Athlete'].map(filter => (
             <button
               key={filter}
               onClick={() => setRoleFilter(filter)}

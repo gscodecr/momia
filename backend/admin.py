@@ -4,6 +4,8 @@ from typing import Any, List
 
 import schemas, models, database
 from auth import get_current_user
+from datetime import datetime, timezone
+import re
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
@@ -19,6 +21,87 @@ def create_role(role: schemas.RoleCreate, db: Session = Depends(database.get_db)
     db.commit()
     db.refresh(new_role)
     return new_role
+
+@router.get("/dashboard-stats")
+def get_dashboard_stats(db: Session = Depends(database.get_db), current_user: models.User = Depends(get_current_user)):
+    if current_user.role.name != "admin":
+        raise HTTPException(status_code=403, detail="No autorizado")
+        
+    now = datetime.now()
+    
+    # 1. Ingresos del mes actual
+    current_month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    payments_this_month = db.query(models.Payment).filter(
+        models.Payment.status == "APPROVED",
+        models.Payment.created_at >= current_month_start
+    ).all()
+    
+    total_ingresos = 0.0
+    for p in payments_this_month:
+        try:
+            # Limpiar el string de amount, e.g. "45,000" o "₡45000" a "45000"
+            clean_amount = re.sub(r'[^\d.]', '', str(p.amount)) if p.amount else "0"
+            total_ingresos += float(clean_amount)
+        except Exception:
+            pass
+            
+    # 2. Atletas Activos
+    active_athletes = db.query(models.User).join(models.Role).filter(
+        models.Role.name == "athlete",
+        models.User.is_active == True
+    ).count()
+    
+    # 3. Atletas Morosos (Option B: next_payment_date expirado)
+    overdue_athletes_query = db.query(models.User).join(models.Role).filter(
+        models.Role.name == "athlete",
+        models.User.is_active == True,
+        models.User.next_payment_date != None,
+        models.User.next_payment_date < now
+    ).all()
+    
+    overdue_athletes_list = []
+    for u in overdue_athletes_query:
+        overdue_athletes_list.append({
+            "id": u.id,
+            "first_name": u.first_name,
+            "last_name": u.last_name,
+            "avatar_url": u.avatar_url,
+            "next_payment_date": str(u.next_payment_date) if u.next_payment_date else None
+        })
+    overdue_count = len(overdue_athletes_list)
+    
+    # 4. Últimos Registros
+    recent_users = db.query(models.User).join(models.Role).filter(
+        models.Role.name == "athlete"
+    ).order_by(models.User.created_at.desc()).limit(5).all()
+    
+    recent_athletes_list = []
+    for u in recent_users:
+        profile = db.query(models.AthleteProfile).filter(models.AthleteProfile.user_id == u.id).first()
+        recent_athletes_list.append({
+            "id": u.id,
+            "first_name": u.first_name,
+            "last_name": u.last_name,
+            "avatar_url": u.avatar_url,
+            "discipline": profile.discipline if profile and profile.discipline else "No asignado",
+            "is_active": u.is_active
+        })
+        
+    # 5. Alertas del Sistema
+    pending_sinpe = db.query(models.Payment).filter(models.Payment.status == "PENDING").count()
+    pending_approval = db.query(models.User).filter(models.User.is_approved == False).count()
+    
+    return {
+        "ingresos_mes": total_ingresos,
+        "atletas_activos": active_athletes,
+        "atletas_morosos": overdue_count,
+        "morosos_list": overdue_athletes_list,
+        "ultimos_registros": recent_athletes_list,
+        "alertas": {
+            "comprobantes_pendientes": pending_sinpe,
+            "atletas_por_aprobar": pending_approval
+        }
+    }
 
 @router.get("/roles", response_model=List[schemas.RoleOut])
 def get_roles(db: Session = Depends(database.get_db), current_user: models.User = Depends(get_current_user)):
