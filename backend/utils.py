@@ -36,11 +36,25 @@ def optimize_and_save_image(upload_file: UploadFile, dest_folder: str, max_width
         new_height = int((float(img.height) * float(ratio)))
         img = img.resize((max_width, new_height), Image.Resampling.LANCZOS)
         
-    # Save optimized
+    # Save optimized locally first
     img.save(filepath, format="WEBP", quality=80)
     
-    # Return relative URL path
-    # Example: if dest_folder is 'uploads/avatars', it returns '/uploads/avatars/filename.webp'
+    # Check if S3 is configured
+    bucket = os.getenv("AWS_BUCKET_NAME")
+    if bucket:
+        try:
+            from services.s3_service import upload_to_s3
+            # Subir a S3
+            s3_url = upload_to_s3(filepath, f"{dest_folder}/{filename}")
+            if s3_url:
+                # Opcional: Eliminar archivo local para ahorrar espacio si se subió a S3 exitosamente
+                os.remove(filepath)
+                return s3_url
+        except Exception as e:
+            print(f"Failed to upload to S3: {e}")
+            pass # Fallback to local URL
+
+    # Return relative URL path for local storage fallback
     return f"/{dest_folder}/{filename}"
 
 def create_notification(db: Session, user_id: int, title: str, message: str, notif_type: str):

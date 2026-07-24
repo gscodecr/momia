@@ -19,12 +19,6 @@ export default function LandingPage() {
           <Link href="/login" className="text-sm font-medium hover:text-[var(--primary)] transition-colors">
             Iniciar Sesión
           </Link>
-          <Link 
-            href="/login" 
-            className="text-sm font-bold bg-white/10 hover:bg-white/20 border border-white/10 px-5 py-2 rounded-full transition-all hover:scale-105 active:scale-95"
-          >
-            Comenzar
-          </Link>
         </div>
       </nav>
 
@@ -50,12 +44,6 @@ export default function LandingPage() {
           >
             Únete a Momia TS <ArrowRight size={20} />
           </Link>
-          <a 
-            href="#features" 
-            className="flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 px-8 py-4 rounded-full font-bold text-lg transition-all hover:-translate-y-1"
-          >
-            Descubre las funciones
-          </a>
         </div>
       </main>
 
@@ -64,7 +52,7 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">Todo lo que necesitas para triunfar</h2>
-            <p className="text-zinc-400 max-w-2xl mx-auto">Herramientas diseñadas tanto para el entrenador perfeccionista como para el atleta comprometido.</p>
+            <p className="text-zinc-400 max-w-2xl mx-auto">Herramientas diseñadas exclusivamente para que el atleta comprometido alcance su máximo potencial.</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -73,9 +61,9 @@ export default function LandingPage() {
               <div className="w-14 h-14 bg-[var(--primary)]/20 rounded-2xl flex items-center justify-center mb-6 text-[var(--primary)] group-hover:scale-110 transition-transform">
                 <Calendar size={28} />
               </div>
-              <h3 className="text-xl font-bold mb-3">Planificador Dinámico</h3>
+              <h3 className="text-xl font-bold mb-3">Tu Plan de Entrenamiento</h3>
               <p className="text-zinc-400 leading-relaxed">
-                Asigna entrenamientos de manera visual. Arrastra, copia y ajusta las cargas de la semana en segundos.
+                Visualiza tus entrenamientos de manera clara. Revisa tus cargas de la semana y prepárate para cada sesión fácilmente.
               </p>
             </div>
 
@@ -84,9 +72,9 @@ export default function LandingPage() {
               <div className="w-14 h-14 bg-blue-500/20 rounded-2xl flex items-center justify-center mb-6 text-blue-400 group-hover:scale-110 transition-transform">
                 <Activity size={28} />
               </div>
-              <h3 className="text-xl font-bold mb-3">Cumplimiento en Tiempo Real</h3>
+              <h3 className="text-xl font-bold mb-3">Progreso en Tiempo Real</h3>
               <p className="text-zinc-400 leading-relaxed">
-                Dashboard inteligente que te alerta visualmente qué atletas están cumpliendo su plan y quiénes necesitan atención.
+                Dashboard inteligente que te muestra de forma interactiva tu nivel de cumplimiento y te ayuda a mantener el enfoque.
               </p>
             </div>
 
@@ -95,9 +83,9 @@ export default function LandingPage() {
               <div className="w-14 h-14 bg-purple-500/20 rounded-2xl flex items-center justify-center mb-6 text-purple-400 group-hover:scale-110 transition-transform">
                 <Target size={28} />
               </div>
-              <h3 className="text-xl font-bold mb-3">Gestión de Eventos</h3>
+              <h3 className="text-xl font-bold mb-3">Tus Próximas Carreras</h3>
               <p className="text-zinc-400 leading-relaxed">
-                Inscripciones y calendarios de carreras integrados para que todo el equipo apunte a la misma meta.
+                Visualiza tus próximos eventos deportivos y prepárate junto con tu equipo para cruzar la meta.
               </p>
             </div>
           </div>
@@ -107,9 +95,7 @@ export default function LandingPage() {
       {/* Footer */}
       <footer className="relative z-10 border-t border-white/10 py-12 px-6 text-center">
         <div className="flex items-center justify-center gap-2 mb-6">
-          <div className="w-6 h-6 rounded-md bg-zinc-800 flex items-center justify-center font-bold text-xs text-zinc-400">
-            M
-          </div>
+          <img src="/apple-icon.png" alt="Momia TS Icon" className="w-6 h-6 rounded-md object-cover" />
           <span className="font-bold text-zinc-400">Momia TS</span>
         </div>
         <p className="text-zinc-600 text-sm">

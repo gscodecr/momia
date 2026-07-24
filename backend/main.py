@@ -6,7 +6,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 import models
-from database import engine
+from database import engine, SessionLocal
 from auth import router as auth_router
 from admin import router as admin_router
 from payments import router as payments_router
@@ -18,6 +18,41 @@ from routers.notifications import router as notifications_router
 from routers.network import router as network_router
 
 models.Base.metadata.create_all(bind=engine)
+
+# Inicializar roles y usuario admin por defecto si no existen
+def init_db():
+    db = SessionLocal()
+    try:
+        # Crear roles si no existen
+        roles = ["admin", "coach", "athlete"]
+        for role_name in roles:
+            if not db.query(models.Role).filter(models.Role.name == role_name).first():
+                db.add(models.Role(name=role_name))
+        db.commit()
+
+        # Crear admin master si no existe ningún admin
+        admin_role = db.query(models.Role).filter(models.Role.name == "admin").first()
+        if admin_role:
+            admin_email = os.getenv("ADMIN_EMAIL", "gerardo@gscodecr.com")
+            if not db.query(models.User).filter(models.User.email == admin_email).first():
+                import security
+                admin_password = os.getenv("ADMIN_PASSWORD", "231287")
+                hashed_password = security.get_password_hash(admin_password)
+                admin_user = models.User(
+                    email=admin_email,
+                    hashed_password=hashed_password,
+                    first_name="Gerardo",
+                    last_name="Soto",
+                    role_id=admin_role.id,
+                    is_approved=True,
+                    is_active=True
+                )
+                db.add(admin_user)
+                db.commit()
+    finally:
+        db.close()
+
+init_db()
 
 app = FastAPI(title="Momia TS API")
 
