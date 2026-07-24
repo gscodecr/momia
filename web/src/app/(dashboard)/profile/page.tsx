@@ -53,7 +53,7 @@ export default function ProfilePage() {
 
   const fetchProfile = async () => {
     try {
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001") + '/auth/me', {
+      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8001') + '/auth/me', {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
       if (res.ok) {
@@ -116,7 +116,7 @@ export default function ProfilePage() {
     formData.append('file', avatarFile);
 
     try {
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001") + '/auth/me/avatar', {
+      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8001') + '/auth/me/avatar', {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
         body: formData
@@ -179,7 +179,7 @@ export default function ProfilePage() {
         return;
       }
 
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001") + '/auth/me', {
+      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8001') + '/auth/me', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -205,7 +205,7 @@ export default function ProfilePage() {
   const saveInjuriesToBackend = async (newInjuries: any[]) => {
     try {
       const payload = { injuries: newInjuries.length > 0 ? JSON.stringify(newInjuries) : '' };
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001") + '/auth/me', {
+      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8001') + '/auth/me', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -285,7 +285,7 @@ export default function ProfilePage() {
                     <LogoLoader size={40} />
                   </div>
                 ) : avatarUrl ? (
-                  <img src={`${avatarUrl?.startsWith(\"http\") ? \"\" : (process.env.NEXT_PUBLIC_API_URL || \"http://127.0.0.1:8001\")}${avatarUrl}`} alt="Avatar" className="w-full h-full object-cover" />
+                  <img src={`${avatarUrl?.startsWith('http') ? '' : (process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8001')}${avatarUrl}`} alt="Avatar" className="w-full h-full object-cover" />
                 ) : (
                   role ? role[0].toUpperCase() : 'U'
                 )}
@@ -461,7 +461,7 @@ export default function ProfilePage() {
                     <UserCircle size={18} />
                   </div>
                   <select value={gender} onChange={e => setGender(e.target.value)} className="w-full py-3.5 pl-11 pr-4 rounded-xl bg-white/5 border border-white/10 hover:border-white/20 focus:border-[var(--primary)] focus:bg-white/10 focus:outline-none transition-all appearance-none cursor-pointer">
-                    <option value="" className="bg-zinc-900 text-white/50">Selecciona tu género</option>
+                    <option value='' className="bg-zinc-900 text-white/50">Selecciona tu género</option>
                     <option value="Masculino" className="bg-zinc-900">Masculino</option>
                     <option value="Femenino" className="bg-zinc-900">Femenino</option>
                     <option value="Otro" className="bg-zinc-900">Otro</option>
@@ -478,7 +478,7 @@ export default function ProfilePage() {
                     <CreditCard size={18} />
                   </div>
                   <select value={paymentPreference} onChange={e => setPaymentPreference(e.target.value)} className="w-full py-3.5 pl-11 pr-4 rounded-xl bg-white/5 border border-white/10 hover:border-white/20 focus:border-[var(--primary)] focus:bg-white/10 focus:outline-none transition-all appearance-none cursor-pointer">
-                    <option value="" className="bg-zinc-900 text-white/50">Selecciona un método</option>
+                    <option value='' className="bg-zinc-900 text-white/50">Selecciona un método</option>
                     <option value="Tarjeta" className="bg-zinc-900">Tarjeta</option>
                     <option value="Transferencia" className="bg-zinc-900">Transferencia</option>
                     <option value="Sinpe" className="bg-zinc-900">Sinpe</option>
@@ -494,7 +494,7 @@ export default function ProfilePage() {
                     <Calendar size={18} />
                   </div>
                   <select value={subscriptionType} onChange={e => setSubscriptionType(e.target.value)} className="w-full py-3.5 pl-11 pr-4 rounded-xl bg-white/5 border border-white/10 hover:border-white/20 focus:border-[var(--primary)] focus:bg-white/10 focus:outline-none transition-all appearance-none cursor-pointer">
-                    <option value="" className="bg-zinc-900 text-white/50">Selecciona un tipo</option>
+                    <option value='' className="bg-zinc-900 text-white/50">Selecciona un tipo</option>
                     <option value="Mensual" className="bg-zinc-900">Mensual</option>
                     <option value="Trimestral" className="bg-zinc-900">Trimestral</option>
                     <option value="Semestral" className="bg-zinc-900">Semestral</option>
@@ -708,7 +708,7 @@ export default function ProfilePage() {
                 {avatarPreview ? (
                   <img src={avatarPreview} alt="Preview" className="w-full h-full object-cover" />
                 ) : avatarUrl ? (
-                  <img src={`${avatarUrl?.startsWith(\"http\") ? \"\" : (process.env.NEXT_PUBLIC_API_URL || \"http://127.0.0.1:8001\")}${avatarUrl}`} alt="Avatar" className="w-full h-full object-cover" />
+                  <img src={`${avatarUrl?.startsWith('http') ? '' : (process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8001')}${avatarUrl}`} alt="Avatar" className="w-full h-full object-cover" />
                 ) : (
                   role ? role[0].toUpperCase() : 'U'
                 )}

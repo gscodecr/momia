@@ -60,7 +60,7 @@ export default function AthleteWorkouts() {
 
   const fetchWorkouts = async () => {
     try {
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001") + '/workouts/', {
+      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8001') + '/workouts/', {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -80,7 +80,7 @@ export default function AthleteWorkouts() {
 
   const handleToggleComplete = async (workout: any) => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001"}/workouts/${workout.id}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8001'}/workouts/${workout.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

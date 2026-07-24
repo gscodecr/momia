@@ -30,7 +30,7 @@ export default function AthleteMarketplace() {
 
   const fetchProducts = async () => {
     try {
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001") + '/products/', {
+      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8001') + '/products/', {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
       if (res.ok) {
@@ -128,7 +128,7 @@ export default function AthleteMarketplace() {
       };
 
       try {
-        const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001") + '/payments/store-tilopay', {
+        const res = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8001') + '/payments/store-tilopay', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -161,7 +161,7 @@ export default function AthleteMarketplace() {
       formData.append('file', sinpeFile);
 
       try {
-        const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001") + '/payments/store-sinpe', {
+        const res = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8001') + '/payments/store-sinpe', {
           method: 'POST',
           headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
           body: formData
@@ -224,7 +224,7 @@ export default function AthleteMarketplace() {
             
             <div className="w-full h-48 bg-zinc-800 rounded-lg flex items-center justify-center text-6xl mb-4 overflow-hidden relative">
               {product.image_url ? (
-                <img src={`${product.image_url?.startsWith(\"http\") ? \"\" : (process.env.NEXT_PUBLIC_API_URL || \"http://127.0.0.1:8001\")}${product.image_url}`} alt={product.name} className="object-cover w-full h-full group-hover:scale-110 transition-transform duration-500" />
+                <img src={`${product.image_url?.startsWith('http') ? '' : (process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8001')}${product.image_url}`} alt={product.name} className="object-cover w-full h-full group-hover:scale-110 transition-transform duration-500" />
               ) : '🛍️'}
               {product.discipline && (
                 <div className="absolute top-2 left-2 flex flex-wrap gap-1">
@@ -259,7 +259,7 @@ export default function AthleteMarketplace() {
             
             <div className="w-full md:w-1/2 h-64 md:h-auto bg-zinc-800 relative">
               {selectedProduct.image_url ? (
-                <img src={`${selectedProduct.image_url?.startsWith(\"http\") ? \"\" : (process.env.NEXT_PUBLIC_API_URL || \"http://127.0.0.1:8001\")}${selectedProduct.image_url}`} className="w-full h-full object-cover" alt="" />
+                <img src={`${selectedProduct.image_url?.startsWith('http') ? '' : (process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8001')}${selectedProduct.image_url}`} className="w-full h-full object-cover" alt='' />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-8xl">🛍️</div>
               )}
@@ -436,7 +436,7 @@ export default function AthleteMarketplace() {
                       </button>
                       <div className="w-16 h-16 bg-black rounded-lg overflow-hidden flex-shrink-0">
                         {item.image_url ? (
-                           <img src={`${item.image_url?.startsWith(\"http\") ? \"\" : (process.env.NEXT_PUBLIC_API_URL || \"http://127.0.0.1:8001\")}${item.image_url}`} className="w-full h-full object-cover" alt=""/>
+                           <img src={`${item.image_url?.startsWith('http') ? '' : (process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8001')}${item.image_url}`} className="w-full h-full object-cover" alt=''/>
                         ) : (
                            <div className="w-full h-full flex items-center justify-center">🛍️</div>
                         )}

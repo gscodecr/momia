@@ -54,7 +54,7 @@ export default function MessagesPage() {
     const token = localStorage.getItem('token');
     if (!token) return;
 
-    fetch((process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001") + '/auth/me', {
+    fetch((process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8001') + '/auth/me', {
       headers: { 'Authorization': `Bearer ${token}` }
     })
       .then(res => res.json())
@@ -84,7 +84,7 @@ export default function MessagesPage() {
   useEffect(() => {
     if (user?.id) {
       const token = localStorage.getItem('token');
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001";
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8001';
       let wsUrl = '';
       if (apiUrl.startsWith('http')) {
         wsUrl = apiUrl.replace('http', 'ws') + `/chat/ws?token=${token}`;
@@ -119,7 +119,7 @@ export default function MessagesPage() {
           
           // Si recibimos un mensaje del usuario que estamos viendo, lo marcamos como leído de inmediato
           if (data.sender_id === selectedContactRef.current.id) {
-            fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001"}/chat/read/${data.sender_id}`, {
+            fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8001'}/chat/read/${data.sender_id}`, {
               method: 'PUT',
               headers: { 'Authorization': `Bearer ${token}` }
             }).then(() => {
@@ -162,7 +162,7 @@ export default function MessagesPage() {
     if (!authToken) return;
     
     try {
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001") + '/chat/contacts', {
+      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8001') + '/chat/contacts', {
         headers: { 'Authorization': `Bearer ${authToken}` }
       });
       const data = await res.json();
@@ -187,7 +187,7 @@ export default function MessagesPage() {
     }
     
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001"}/chat/history/${targetId}?limit=50&offset=${currentOffset}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8001'}/chat/history/${targetId}?limit=50&offset=${currentOffset}`, {
         headers: { 'Authorization': `Bearer ${authToken}` }
       });
       const data = await res.json();
@@ -255,7 +255,7 @@ export default function MessagesPage() {
       const formData = new FormData();
       formData.append('file', selectedImage);
       try {
-        const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001") + '/chat/upload', {
+        const res = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8001') + '/chat/upload', {
           method: 'POST',
           headers: { 'Authorization': `Bearer ${authToken}` },
           body: formData
@@ -300,7 +300,7 @@ export default function MessagesPage() {
 
   const getAvatarUrl = (url: string | null) => {
     if (!url) return null;
-    return url.startsWith('http') ? url : `${url?.startsWith(\"http\") ? \"\" : (process.env.NEXT_PUBLIC_API_URL || \"http://127.0.0.1:8001\")}${url}`;
+    return url.startsWith('http') ? url : `${url?.startsWith('http') ? '' : (process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8001')}${url}`;
   };
 
   const handleBroadcastImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -324,7 +324,7 @@ export default function MessagesPage() {
       if (broadcastImage) {
         const formData = new FormData();
         formData.append('file', broadcastImage);
-        const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001") + '/chat/upload', {
+        const res = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8001') + '/chat/upload', {
           method: 'POST',
           headers: { 'Authorization': `Bearer ${token}` },
           body: formData
@@ -335,7 +335,7 @@ export default function MessagesPage() {
         }
       }
 
-      await fetch((process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001") + '/chat/broadcast', {
+      await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8001') + '/chat/broadcast', {
         method: 'POST',
         headers: { 
           'Authorization': `Bearer ${token}`,

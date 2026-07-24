@@ -87,8 +87,8 @@ function CoachPlannerContent() {
     try {
       const headers = { 'Authorization': `Bearer ${localStorage.getItem('token')}` };
       const [resAthletes, resWorkouts] = await Promise.all([
-        fetch((process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001") + '/workouts/athletes', { headers }),
-        fetch((process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001") + '/workouts/', { headers })
+        fetch((process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8001') + '/workouts/athletes', { headers }),
+        fetch((process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8001') + '/workouts/', { headers })
       ]);
       
       if (resAthletes.ok) {
@@ -142,8 +142,8 @@ function CoachPlannerContent() {
 
     try {
       const url = modalMode === 'create' 
-        ? (process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001") + '/workouts/' 
-        : `${process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001"}/workouts/${editingWorkoutId}`;
+        ? (process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8001') + '/workouts/' 
+        : `${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8001'}/workouts/${editingWorkoutId}`;
         
       const res = await fetch(url, {
         method: modalMode === 'create' ? 'POST' : 'PUT',
@@ -173,7 +173,7 @@ function CoachPlannerContent() {
     if (!editingWorkoutId) return;
     
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001"}/workouts/${editingWorkoutId}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8001'}/workouts/${editingWorkoutId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -253,7 +253,7 @@ function CoachPlannerContent() {
                   <td className="p-4 border-r border-white/5 sticky left-0 bg-[#09090b] z-10 shadow-[2px_0_5px_rgba(0,0,0,0.5)] align-middle">
                     <div className="flex flex-col items-center justify-center gap-2 text-center py-2">
                       {athlete.avatar_url ? (
-                         <img src={`${athlete.avatar_url?.startsWith(\"http\") ? \"\" : (process.env.NEXT_PUBLIC_API_URL || \"http://127.0.0.1:8001\")}${athlete.avatar_url}`} alt="Avatar" className="w-12 h-12 rounded-full object-cover border border-white/10 shadow-sm" />
+                         <img src={`${athlete.avatar_url?.startsWith('http') ? '' : (process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8001')}${athlete.avatar_url}`} alt="Avatar" className="w-12 h-12 rounded-full object-cover border border-white/10 shadow-sm" />
                       ) : (
                          <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-white/50 shadow-sm">
                            <UserCircle size={28} />

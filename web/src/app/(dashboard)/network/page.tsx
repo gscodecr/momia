@@ -37,7 +37,7 @@ export default function NetworkPage() {
   const fetchItems = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001") + '/network/', {
+      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8001') + '/network/', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -72,7 +72,7 @@ export default function NetworkPage() {
       if (category) formData.append('category', category);
       if (selectedFile) formData.append('photo', selectedFile);
 
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001") + '/network/', {
+      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8001') + '/network/', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -153,7 +153,7 @@ export default function NetworkPage() {
           {filteredItems.map((item) => (
             <div key={item.id} onClick={() => openDetail(item)} className="p-4 hover:bg-white/5 cursor-pointer transition-colors flex gap-4">
               <div className="w-20 h-20 rounded-lg bg-[var(--background)] overflow-hidden flex-shrink-0 border border-white/5">
-                <img src={item.photo_url ? `${item.photo_url?.startsWith(\"http\") ? \"\" : (process.env.NEXT_PUBLIC_API_URL || \"http://127.0.0.1:8001\")}${item.photo_url}` : 'https://via.placeholder.com/400x300?text=Sin+Imagen'} alt={item.title} className="w-full h-full object-cover" />
+                <img src={item.photo_url ? `${item.photo_url?.startsWith('http') ? '' : (process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8001')}${item.photo_url}` : 'https://via.placeholder.com/400x300?text=Sin+Imagen'} alt={item.title} className="w-full h-full object-cover" />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex justify-between items-start mb-1">
@@ -199,7 +199,7 @@ export default function NetworkPage() {
                   <td className="p-4">
                     <div className="flex items-center gap-4">
                       <div className="w-12 h-12 rounded-lg bg-[var(--background)] overflow-hidden flex-shrink-0 border border-white/5">
-                        <img src={item.photo_url ? `${item.photo_url?.startsWith(\"http\") ? \"\" : (process.env.NEXT_PUBLIC_API_URL || \"http://127.0.0.1:8001\")}${item.photo_url}` : 'https://via.placeholder.com/400x300?text=Sin+Imagen'} alt={item.title} className="w-full h-full object-cover" />
+                        <img src={item.photo_url ? `${item.photo_url?.startsWith('http') ? '' : (process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8001')}${item.photo_url}` : 'https://via.placeholder.com/400x300?text=Sin+Imagen'} alt={item.title} className="w-full h-full object-cover" />
                       </div>
                       <div>
                         <p className="font-bold">{item.title}</p>
@@ -273,7 +273,7 @@ export default function NetworkPage() {
                       onChange={e => setCategory(e.target.value)}
                       className="w-full p-4 rounded-xl bg-[var(--background)] border border-[var(--border)] focus:border-[var(--primary)] focus:ring-1 focus:ring-[var(--primary)] outline-none transition-all appearance-none"
                     >
-                      <option value="">Seleccionar...</option>
+                      <option value=''>Seleccionar...</option>
                       <option value="Salud">Salud y Bienestar</option>
                       <option value="Equipo">Equipo Deportivo</option>
                       <option value="Servicios">Servicios Profesionales</option>
@@ -357,7 +357,7 @@ export default function NetworkPage() {
             </button>
             
             <div className="h-64 bg-[var(--background)] relative w-full">
-              <img src={selectedItem.photo_url ? `${selectedItem.photo_url?.startsWith(\"http\") ? \"\" : (process.env.NEXT_PUBLIC_API_URL || \"http://127.0.0.1:8001\")}${selectedItem.photo_url}` : 'https://via.placeholder.com/400x300?text=Sin+Imagen'} alt={selectedItem.title} className="w-full h-full object-cover" />
+              <img src={selectedItem.photo_url ? `${selectedItem.photo_url?.startsWith('http') ? '' : (process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8001')}${selectedItem.photo_url}` : 'https://via.placeholder.com/400x300?text=Sin+Imagen'} alt={selectedItem.title} className="w-full h-full object-cover" />
               <div className="absolute inset-0 bg-gradient-to-t from-[var(--surface)] via-transparent to-transparent" />
             </div>
             

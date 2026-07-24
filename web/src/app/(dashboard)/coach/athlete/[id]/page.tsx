@@ -24,7 +24,7 @@ export default function AthleteExpediente({ params }: { params: Promise<{ id: st
 
   const fetchAthleteInfo = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001"}/workouts/athletes`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8001'}/workouts/athletes`, {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
       if (res.ok) {
@@ -78,7 +78,7 @@ export default function AthleteExpediente({ params }: { params: Promise<{ id: st
         injuries: injuriesList.length > 0 ? JSON.stringify(injuriesList) : ''
       };
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001"}/workouts/athletes/${id}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8001'}/workouts/athletes/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
