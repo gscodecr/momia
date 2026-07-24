@@ -44,7 +44,7 @@ export default function DashboardLayout({ children }: LayoutProps) {
       setRole(storedRole);
       // Fetch latest user data
       const fetchUserData = () => {
-        fetch(process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001" + '/auth/me', {
+        fetch((process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001") + '/auth/me', {
           headers: { 'Authorization': `Bearer ${token}` }
         })
         .then(res => res.json())
@@ -62,7 +62,7 @@ export default function DashboardLayout({ children }: LayoutProps) {
         .catch(() => {});
       };
       const fetchNotifications = () => {
-        fetch(process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001" + '/notifications/', {
+        fetch((process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001") + '/notifications/', {
           headers: { 'Authorization': `Bearer ${token}` }
         })
         .then(res => res.json())
@@ -95,7 +95,7 @@ export default function DashboardLayout({ children }: LayoutProps) {
 
   const markAsRead = (id: number) => {
     const token = localStorage.getItem('token');
-    fetch(`${process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001" + ""}/notifications/${id}/read`, {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_URL || (process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001") + ""}/notifications/${id}/read`, {
       method: 'PUT',
       headers: { 'Authorization': `Bearer ${token}` }
     }).then(() => {
@@ -105,7 +105,7 @@ export default function DashboardLayout({ children }: LayoutProps) {
 
   const markAllAsRead = () => {
     const token = localStorage.getItem('token');
-    fetch(`${process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001" + ""}/notifications/read-all`, {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_URL || (process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001") + ""}/notifications/read-all`, {
       method: 'PUT',
       headers: { 'Authorization': `Bearer ${token}` }
     }).then(() => {
@@ -263,7 +263,7 @@ export default function DashboardLayout({ children }: LayoutProps) {
             {userName && <span className="hidden md:block text-sm font-medium opacity-80 group-hover:opacity-100 transition-opacity">{userName}</span>}
             <div className="w-8 h-8 rounded-full flex items-center justify-center font-bold text-white group-hover:scale-105 transition-transform overflow-hidden" style={{ backgroundColor: 'var(--primary)' }}>
               {avatarUrl ? (
-                <img src={`${process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001" + ""}${avatarUrl}`} alt="Avatar" className="w-full h-full object-cover" />
+                <img src={`${process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_URL || (process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001") + ""}${avatarUrl}`} alt="Avatar" className="w-full h-full object-cover" />
               ) : (
                 role[0].toUpperCase()
               )}

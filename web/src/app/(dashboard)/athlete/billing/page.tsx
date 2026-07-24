@@ -24,7 +24,7 @@ export default function AthleteBilling() {
 
   const fetchBilling = async () => {
     try {
-      const res = await fetch(process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001" + '/payments/me', {
+      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001") + '/payments/me', {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
       if (res.ok) {
@@ -43,7 +43,7 @@ export default function AthleteBilling() {
     const newValue = e.target.checked;
     setAutoPay(newValue);
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001" + ""}/payments/auto-pay?auto_pay=${newValue}`, {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_URL || (process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001") + ""}/payments/auto-pay?auto_pay=${newValue}`, {
         method: 'PUT',
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
@@ -59,7 +59,7 @@ export default function AthleteBilling() {
     try {
       const amount = "40000"; // Dummy amount for now
       const desc = `Mensualidad ${new Date().toLocaleString('es-CR', { month: 'long', year: 'numeric' })}`;
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001" + ""}/payments/tilopay/simulate?amount=${amount}&description=${desc}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_URL || (process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001") + ""}/payments/tilopay/simulate?amount=${amount}&description=${desc}`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
@@ -99,7 +99,7 @@ export default function AthleteBilling() {
     formData.append('file', sinpeFile);
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001" + ""}/payments/report-sinpe?amount=${amount}&description=${desc}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_URL || (process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001") + ""}/payments/report-sinpe?amount=${amount}&description=${desc}`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
         body: formData
