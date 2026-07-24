@@ -27,7 +27,7 @@ Antes de tocar el servidor, debes crear estos tres recursos en tu panel de AWS L
    - SSH (22)
    - HTTP (80)
    - HTTPS (443)
-5. En tu registrador de dominio (ej. GoDaddy o Namecheap), crea un **Registro A** que apunte tu dominio (ej. `app.midominio.com`) a la IP Estática que acabas de crear.
+5. En tu registrador de dominio (ej. GoDaddy o Namecheap), crea un **Registro A** que apunte tu dominio principal (ej. `momiats.com`) a la IP Estática que acabas de crear.
 
 ---
 
@@ -138,7 +138,7 @@ Pega esta configuración:
 ```nginx
 server {
     listen 80;
-    server_name app.tudominio.com; # CAMBIA ESTO POR TU DOMINIO
+    server_name momiats.com www.momiats.com;
 
     # Tráfico del Frontend
     location / {
@@ -172,7 +172,7 @@ sudo systemctl restart nginx
 ### Instalar Certificado SSL (HTTPS Seguro)
 ```bash
 sudo apt install -y certbot python3-certbot-nginx
-sudo certbot --nginx -d app.tudominio.com
+sudo certbot --nginx -d momiats.com -d www.momiats.com
 ```
 
 ---
