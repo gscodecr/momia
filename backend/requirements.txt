@@ -2,6 +2,8 @@ fastapi
 uvicorn[standard]
 sqlalchemy
 python-jose[cryptography]
+# Security
+bcrypt==3.2.0
 passlib[bcrypt]
 python-multipart
 Pillow
