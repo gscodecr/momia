@@ -84,8 +84,14 @@ export default function MessagesPage() {
   useEffect(() => {
     if (user?.id) {
       const token = localStorage.getItem('token');
-      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-      const wsUrl = `${protocol}//${window.location.hostname}:8001/chat/ws?token=${token}`;
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001";
+      let wsUrl = '';
+      if (apiUrl.startsWith('http')) {
+        wsUrl = apiUrl.replace('http', 'ws') + `/chat/ws?token=${token}`;
+      } else {
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        wsUrl = `${protocol}//${window.location.host}${apiUrl}/chat/ws?token=${token}`;
+      }
       ws.current = new WebSocket(wsUrl);
       
       ws.current.onopen = () => {
