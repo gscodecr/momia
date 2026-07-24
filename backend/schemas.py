@@ -6,7 +6,7 @@ from datetime import datetime
 # --- Roles ---
 class RoleBase(BaseModel):
     name: str
-    permissions: str
+    permissions: Optional[str] = None
 
 class RoleCreate(RoleBase):
     pass
