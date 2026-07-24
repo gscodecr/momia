@@ -119,7 +119,7 @@ export default function MessagesPage() {
           
           // Si recibimos un mensaje del usuario que estamos viendo, lo marcamos como leído de inmediato
           if (data.sender_id === selectedContactRef.current.id) {
-            fetch(`${process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_URL || (process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001") + ""}/chat/read/${data.sender_id}`, {
+            fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001"}/chat/read/${data.sender_id}`, {
               method: 'PUT',
               headers: { 'Authorization': `Bearer ${token}` }
             }).then(() => {
@@ -187,7 +187,7 @@ export default function MessagesPage() {
     }
     
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_URL || (process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001") + ""}/chat/history/${targetId}?limit=50&offset=${currentOffset}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001"}/chat/history/${targetId}?limit=50&offset=${currentOffset}`, {
         headers: { 'Authorization': `Bearer ${authToken}` }
       });
       const data = await res.json();
@@ -300,7 +300,7 @@ export default function MessagesPage() {
 
   const getAvatarUrl = (url: string | null) => {
     if (!url) return null;
-    return url.startsWith('http') ? url : `${process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_URL || (process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001") + ""}${url}`;
+    return url.startsWith('http') ? url : `${url?.startsWith(\"http\") ? \"\" : (process.env.NEXT_PUBLIC_API_URL || \"http://127.0.0.1:8001\")}${url}`;
   };
 
   const handleBroadcastImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {

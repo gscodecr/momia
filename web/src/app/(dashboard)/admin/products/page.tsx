@@ -110,7 +110,7 @@ export default function AdminProducts() {
       const totalStock = calculateTotalStock();
       const variants_json = useVariants ? JSON.stringify(variants.map(({color, size, stock}) => ({color, size, stock}))) : null;
 
-      const url = editingProductId ? `${process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_URL || (process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001") + ""}/products/${editingProductId}` : (process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001") + '/products/';
+      const url = editingProductId ? `${process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001"}/products/${editingProductId}` : (process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001") + '/products/';
       const method = editingProductId ? 'PUT' : 'POST';
       
       const res = await fetch(url, {
@@ -180,7 +180,7 @@ export default function AdminProducts() {
   const handleDelete = async (id: number) => {
     if (!confirm('¿Seguro que deseas eliminar este producto?')) return;
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_URL || (process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001") + ""}/products/${id}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001"}/products/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
@@ -196,7 +196,7 @@ export default function AdminProducts() {
   const handleDeliverOrder = async (orderId: number) => {
     if (!confirm('¿Marcar esta orden como entregada?')) return;
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_URL || (process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001") + ""}/admin/orders/${orderId}/deliver`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001"}/admin/orders/${orderId}/deliver`, {
         method: 'PUT',
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
@@ -305,7 +305,7 @@ export default function AdminProducts() {
                 <div className="border-2 border-dashed border-white/20 rounded-xl p-4 text-center hover:border-[var(--primary)] transition-colors relative flex flex-col items-center justify-center overflow-hidden h-24">
                   {imageUrl ? (
                     <div className="flex items-center gap-3 w-full justify-center">
-                       <img src={`${process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_URL || (process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001") + ""}${imageUrl}`} alt="preview" className="h-16 w-16 object-cover rounded-lg border border-white/10" />
+                       <img src={`${imageUrl?.startsWith(\"http\") ? \"\" : (process.env.NEXT_PUBLIC_API_URL || \"http://127.0.0.1:8001\")}${imageUrl}`} alt="preview" className="h-16 w-16 object-cover rounded-lg border border-white/10" />
                        <div className="text-left flex flex-col">
                          <span className="text-sm font-bold text-green-400 flex items-center gap-1"><CheckCircle size={14}/> Imagen Cargada</span>
                          <span className="text-xs opacity-50 cursor-pointer hover:underline text-white">Cambiar imagen</span>
@@ -427,7 +427,7 @@ export default function AdminProducts() {
                       <td className="p-4">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 bg-zinc-800 rounded flex items-center justify-center overflow-hidden">
-                            {p.image_url ? <img src={`${process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_URL || (process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001") + ""}${p.image_url}`} className="object-cover w-full h-full" alt="" /> : <Package size={20} className="opacity-50"/>}
+                            {p.image_url ? <img src={`${p.image_url?.startsWith(\"http\") ? \"\" : (process.env.NEXT_PUBLIC_API_URL || \"http://127.0.0.1:8001\")}${p.image_url}`} className="object-cover w-full h-full" alt="" /> : <Package size={20} className="opacity-50"/>}
                           </div>
                           <div>
                             <p className="font-bold">{p.name}</p>

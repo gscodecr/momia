@@ -207,7 +207,7 @@ export default function CoachDashboard() {
                       <td className="p-4 align-middle">
                         <div className="flex items-center gap-4">
                           {athlete.avatar_url ? (
-                            <img src={`${process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_URL || (process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001") + ""}${athlete.avatar_url}`} alt="Avatar" className="w-12 h-12 rounded-full object-cover border border-white/10 shadow-lg" />
+                            <img src={`${athlete.avatar_url?.startsWith(\"http\") ? \"\" : (process.env.NEXT_PUBLIC_API_URL || \"http://127.0.0.1:8001\")}${athlete.avatar_url}`} alt="Avatar" className="w-12 h-12 rounded-full object-cover border border-white/10 shadow-lg" />
                           ) : (
                             <div className="w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg shadow-lg border border-white/10" style={{ backgroundColor: 'var(--primary)', color: 'white' }}>
                               {athlete.first_name[0]}{athlete.last_name[0]}

@@ -285,7 +285,7 @@ export default function ProfilePage() {
                     <LogoLoader size={40} />
                   </div>
                 ) : avatarUrl ? (
-                  <img src={`${process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_URL || (process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001") + ""}${avatarUrl}`} alt="Avatar" className="w-full h-full object-cover" />
+                  <img src={`${avatarUrl?.startsWith(\"http\") ? \"\" : (process.env.NEXT_PUBLIC_API_URL || \"http://127.0.0.1:8001\")}${avatarUrl}`} alt="Avatar" className="w-full h-full object-cover" />
                 ) : (
                   role ? role[0].toUpperCase() : 'U'
                 )}
@@ -708,7 +708,7 @@ export default function ProfilePage() {
                 {avatarPreview ? (
                   <img src={avatarPreview} alt="Preview" className="w-full h-full object-cover" />
                 ) : avatarUrl ? (
-                  <img src={`${process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_URL || (process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001") + ""}${avatarUrl}`} alt="Avatar" className="w-full h-full object-cover" />
+                  <img src={`${avatarUrl?.startsWith(\"http\") ? \"\" : (process.env.NEXT_PUBLIC_API_URL || \"http://127.0.0.1:8001\")}${avatarUrl}`} alt="Avatar" className="w-full h-full object-cover" />
                 ) : (
                   role ? role[0].toUpperCase() : 'U'
                 )}
