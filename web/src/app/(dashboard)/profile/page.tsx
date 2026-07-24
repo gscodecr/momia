@@ -53,7 +53,7 @@ export default function ProfilePage() {
 
   const fetchProfile = async () => {
     try {
-      const res = await fetch('http://127.0.0.1:8001/auth/me', {
+      const res = await fetch(process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001" + '/auth/me', {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
       if (res.ok) {
@@ -116,7 +116,7 @@ export default function ProfilePage() {
     formData.append('file', avatarFile);
 
     try {
-      const res = await fetch('http://127.0.0.1:8001/auth/me/avatar', {
+      const res = await fetch(process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001" + '/auth/me/avatar', {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
         body: formData
@@ -179,7 +179,7 @@ export default function ProfilePage() {
         return;
       }
 
-      const res = await fetch('http://127.0.0.1:8001/auth/me', {
+      const res = await fetch(process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001" + '/auth/me', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -205,7 +205,7 @@ export default function ProfilePage() {
   const saveInjuriesToBackend = async (newInjuries: any[]) => {
     try {
       const payload = { injuries: newInjuries.length > 0 ? JSON.stringify(newInjuries) : '' };
-      const res = await fetch('http://127.0.0.1:8001/auth/me', {
+      const res = await fetch(process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001" + '/auth/me', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -285,7 +285,7 @@ export default function ProfilePage() {
                     <LogoLoader size={40} />
                   </div>
                 ) : avatarUrl ? (
-                  <img src={`http://127.0.0.1:8001${avatarUrl}`} alt="Avatar" className="w-full h-full object-cover" />
+                  <img src={`${process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001" + ""}${avatarUrl}`} alt="Avatar" className="w-full h-full object-cover" />
                 ) : (
                   role ? role[0].toUpperCase() : 'U'
                 )}
@@ -708,7 +708,7 @@ export default function ProfilePage() {
                 {avatarPreview ? (
                   <img src={avatarPreview} alt="Preview" className="w-full h-full object-cover" />
                 ) : avatarUrl ? (
-                  <img src={`http://127.0.0.1:8001${avatarUrl}`} alt="Avatar" className="w-full h-full object-cover" />
+                  <img src={`${process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001" + ""}${avatarUrl}`} alt="Avatar" className="w-full h-full object-cover" />
                 ) : (
                   role ? role[0].toUpperCase() : 'U'
                 )}

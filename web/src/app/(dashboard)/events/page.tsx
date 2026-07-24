@@ -45,7 +45,7 @@ export default function EventsPage() {
   const fetchMyRegistrations = async () => {
     if (localStorage.getItem('role') !== 'athlete') return;
     try {
-      const res = await fetch('http://127.0.0.1:8001/events/my_registrations', {
+      const res = await fetch(process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001" + '/events/my_registrations', {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -61,7 +61,7 @@ export default function EventsPage() {
 
   const fetchEvents = async () => {
     try {
-      const res = await fetch('http://127.0.0.1:8001/events/', {
+      const res = await fetch(process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001" + '/events/', {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -78,7 +78,7 @@ export default function EventsPage() {
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await fetch('http://127.0.0.1:8001/events/', {
+      const res = await fetch(process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001" + '/events/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -110,7 +110,7 @@ export default function EventsPage() {
 
   const handleRegister = async (eventId: number) => {
     try {
-      const res = await fetch(`http://127.0.0.1:8001/events/${eventId}/register`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001" + ""}/events/${eventId}/register`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -130,7 +130,7 @@ export default function EventsPage() {
 
   const handleUnregister = async (eventId: number) => {
     try {
-      const res = await fetch(`http://127.0.0.1:8001/events/${eventId}/register`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001" + ""}/events/${eventId}/register`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -155,7 +155,7 @@ export default function EventsPage() {
       setLoadingRegs(true);
       setRegistrations([]);
       try {
-        const res = await fetch(`http://127.0.0.1:8001/events/${event.id}/registrations`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001" + ""}/events/${event.id}/registrations`, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
           }
@@ -183,7 +183,7 @@ export default function EventsPage() {
 
     for (const reg of registrations) {
       try {
-        const res = await fetch('http://127.0.0.1:8001/workouts/', {
+        const res = await fetch(process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001" + '/workouts/', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -209,7 +209,7 @@ export default function EventsPage() {
     setSendingPlan(false);
     
     // Refresh registrations to get updated has_plan status
-    const refreshRes = await fetch(`http://127.0.0.1:8001/events/${selectedEvent.id}/registrations`, {
+    const refreshRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001" + ""}/events/${selectedEvent.id}/registrations`, {
       headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
     });
     if (refreshRes.ok) {
@@ -233,7 +233,7 @@ export default function EventsPage() {
     e.preventDefault();
     setSendingIndivPlan(true);
     try {
-      const res = await fetch('http://127.0.0.1:8001/workouts/', {
+      const res = await fetch(process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001" + '/workouts/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -254,7 +254,7 @@ export default function EventsPage() {
         setAssigningPlanFor(null);
         
         // Refresh registrations
-        const refreshRes = await fetch(`http://127.0.0.1:8001/events/${selectedEvent.id}/registrations`, {
+        const refreshRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001" + ""}/events/${selectedEvent.id}/registrations`, {
           headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
         });
         if (refreshRes.ok) {

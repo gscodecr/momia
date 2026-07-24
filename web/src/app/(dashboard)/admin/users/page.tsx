@@ -49,10 +49,10 @@ export default function AdminUsers() {
     }
     try {
       const [usersRes, rolesRes] = await Promise.all([
-        fetch('http://127.0.0.1:8001/admin/users', {
+        fetch(process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001" + '/admin/users', {
           headers: { 'Authorization': `Bearer ${token}` }
         }),
-        fetch('http://127.0.0.1:8001/admin/roles', {
+        fetch(process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001" + '/admin/roles', {
           headers: { 'Authorization': `Bearer ${token}` }
         })
       ]);
@@ -73,7 +73,7 @@ export default function AdminUsers() {
     e.preventDefault();
     setAddingUser(true);
     try {
-      const res = await fetch('http://127.0.0.1:8001/admin/users', {
+      const res = await fetch(process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001" + '/admin/users', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -105,7 +105,7 @@ export default function AdminUsers() {
 
   const updateRole = async (userId: number, roleId: number) => {
     try {
-      const res = await fetch(`http://127.0.0.1:8001/admin/users/${userId}/role`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001" + ""}/admin/users/${userId}/role`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -126,7 +126,7 @@ export default function AdminUsers() {
 
   const updateStatus = async (userId: number, field: 'is_active' | 'is_approved', value: boolean) => {
     try {
-      const res = await fetch(`http://127.0.0.1:8001/admin/users/${userId}/status`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001" + ""}/admin/users/${userId}/status`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -147,7 +147,7 @@ export default function AdminUsers() {
 
   const updateCoach = async (userId: number, coachId: number | null) => {
     try {
-      const res = await fetch(`http://127.0.0.1:8001/admin/users/${userId}/coach`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001" + ""}/admin/users/${userId}/coach`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

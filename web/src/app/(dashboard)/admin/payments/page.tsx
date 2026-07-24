@@ -38,7 +38,7 @@ export default function AdminPayments() {
     }
     setLoading(true);
     try {
-      const res = await fetch('http://127.0.0.1:8001/payments/all', {
+      const res = await fetch(process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001" + '/payments/all', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -62,7 +62,7 @@ export default function AdminPayments() {
   const approvePayment = async (paymentId: number) => {
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch(`http://127.0.0.1:8001/payments/${paymentId}/approve`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001" + ""}/payments/${paymentId}/approve`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -83,7 +83,7 @@ export default function AdminPayments() {
     if(!confirm("¿Seguro que deseas rechazar este pago?")) return;
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch(`http://127.0.0.1:8001/payments/${paymentId}/reject`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001" + ""}/payments/${paymentId}/reject`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -148,7 +148,7 @@ export default function AdminPayments() {
                 <div className="flex-1 w-full md:w-auto border-b md:border-b-0 border-white/10 pb-4 md:pb-0">
                   <div className="flex items-center gap-3 mb-2">
                     {payment.user?.avatar_url ? (
-                      <img src={`http://127.0.0.1:8001${payment.user.avatar_url}`} alt="Avatar" className="w-8 h-8 rounded-full object-cover border border-white/10" />
+                      <img src={`${process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001" + ""}${payment.user.avatar_url}`} alt="Avatar" className="w-8 h-8 rounded-full object-cover border border-white/10" />
                     ) : (
                       <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center font-bold text-xs" style={{ color: 'var(--primary)' }}>
                         {payment.user?.first_name?.[0]}{payment.user?.last_name?.[0]}

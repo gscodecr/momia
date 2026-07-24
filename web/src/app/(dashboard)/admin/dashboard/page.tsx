@@ -11,7 +11,7 @@ export default function AdminDashboard() {
     const fetchStats = async () => {
       try {
         const token = localStorage.getItem('token');
-        const res = await fetch('http://127.0.0.1:8001/admin/dashboard-stats', {
+        const res = await fetch(process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001" + '/admin/dashboard-stats', {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (res.ok) {
@@ -113,7 +113,7 @@ export default function AdminDashboard() {
                 <div key={atleta.id} className="p-3 rounded-lg bg-black/20 flex justify-between items-center border border-white/5">
                   <div className="flex items-center gap-3">
                     {atleta.avatar_url ? (
-                      <img src={atleta.avatar_url.startsWith('http') ? atleta.avatar_url : `http://127.0.0.1:8001${atleta.avatar_url}`} alt="Avatar" className="w-10 h-10 rounded-full object-cover" />
+                      <img src={atleta.avatar_url.startsWith('http') ? atleta.avatar_url : `${process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001" + ""}${atleta.avatar_url}`} alt="Avatar" className="w-10 h-10 rounded-full object-cover" />
                     ) : (
                       <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center text-xs">
                         {atleta.first_name?.[0]}{atleta.last_name?.[0]}
@@ -178,7 +178,7 @@ export default function AdminDashboard() {
               {stats?.morosos_list?.map((atleta: any) => (
                 <div key={atleta.id} className="p-3 rounded-lg bg-black/30 border border-red-500/10 flex items-center gap-3">
                   {atleta.avatar_url ? (
-                    <img src={atleta.avatar_url.startsWith('http') ? atleta.avatar_url : `http://127.0.0.1:8001${atleta.avatar_url}`} alt="Avatar" className="w-10 h-10 rounded-full object-cover" />
+                    <img src={atleta.avatar_url.startsWith('http') ? atleta.avatar_url : `${process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001" + ""}${atleta.avatar_url}`} alt="Avatar" className="w-10 h-10 rounded-full object-cover" />
                   ) : (
                     <div className="w-10 h-10 rounded-full bg-red-950 flex items-center justify-center text-xs text-red-400 font-bold">
                       {atleta.first_name?.[0]}{atleta.last_name?.[0]}
