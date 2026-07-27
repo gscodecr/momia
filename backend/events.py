@@ -17,7 +17,7 @@ def get_events(db: Session = Depends(get_db)):
     return db.query(models.Event).order_by(models.Event.date).all()
 
 @router.post("/", response_model=schemas.EventOut)
-def create_event(event: schemas.EventCreate, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+def create_event(event: schemas.EventCreate, background_tasks: BackgroundTasks, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
     if current_user.role.name not in ["admin", "coach"]:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="No autorizado")
     
@@ -25,6 +25,18 @@ def create_event(event: schemas.EventCreate, db: Session = Depends(get_db), curr
     db.add(new_event)
     db.commit()
     db.refresh(new_event)
+    
+    # Notify all athletes
+    athletes = db.query(models.User).join(models.Role).filter(models.Role.name == "athlete", models.User.is_active == True).all()
+    for athlete in athletes:
+        if athlete.email:
+            background_tasks.add_task(
+                email_service.send_event_notification_email, 
+                to_email=athlete.email, 
+                event_title=new_event.title, 
+                date=str(new_event.date.date())
+            )
+            
     return new_event
 
 @router.post("/{event_id}/register", response_model=schemas.EventRegistrationOut)

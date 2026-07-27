@@ -6,7 +6,7 @@ from typing import Any
 from fastapi import UploadFile, File
 
 import schemas, models, security, database, utils
-
+from services.email_service import send_welcome_email, send_forgot_password_email
 router = APIRouter(prefix="/auth", tags=["auth"])
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
 
@@ -27,7 +27,34 @@ def register_user(user_in: schemas.UserCreate, db: Session = Depends(database.ge
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
+    
+    # Enviar correo de bienvenida/en revisión
+    send_welcome_email(to_email=new_user.email, first_name=new_user.first_name)
+    
     return new_user
+
+@router.post("/forgot-password")
+def forgot_password(req: schemas.ForgotPasswordRequest, db: Session = Depends(database.get_db)):
+    user = db.query(models.User).filter(models.User.email == req.email).first()
+    if user:
+        reset_token = security.create_reset_token(user.email)
+        send_forgot_password_email(to_email=user.email, first_name=user.first_name, reset_token=reset_token)
+    # Siempre retornamos lo mismo por seguridad, exista o no el correo
+    return {"message": "Si el correo está registrado, recibirás instrucciones para restablecer tu contraseña."}
+
+@router.post("/reset-password")
+def reset_password(req: schemas.ResetPasswordRequest, db: Session = Depends(database.get_db)):
+    email = security.verify_reset_token(req.token)
+    if not email:
+        raise HTTPException(status_code=400, detail="Token inválido o expirado.")
+    
+    user = db.query(models.User).filter(models.User.email == email).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado.")
+    
+    user.hashed_password = security.get_password_hash(req.new_password)
+    db.commit()
+    return {"message": "Contraseña actualizada exitosamente."}
 
 @router.post("/login", response_model=schemas.Token)
 def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(database.get_db)) -> Any:

@@ -94,7 +94,7 @@ def create_workout(workout: schemas.WorkoutCreate, background_tasks: BackgroundT
             background_tasks.add_task(
                 email_service.send_workout_assigned_email,
                 to_email=athlete.email,
-                athlete_name=athlete.first_name,
+                first_name=athlete.first_name,
                 workout_title=new_workout.title,
                 date=str(new_workout.scheduled_date.date())
             )

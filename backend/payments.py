@@ -108,7 +108,7 @@ def toggle_auto_pay(auto_pay: bool, db: Session = Depends(database.get_db), curr
     return {"auto_pay": current_user.auto_pay}
 
 @router.post("/tilopay/simulate")
-def simulate_tilopay(amount: str, description: str, db: Session = Depends(database.get_db), current_user: models.User = Depends(get_current_user)):
+def simulate_tilopay(amount: str, description: str, background_tasks: BackgroundTasks, db: Session = Depends(database.get_db), current_user: models.User = Depends(get_current_user)):
     # Create successful payment
     payment = models.Payment(
         user_id=current_user.id,
@@ -141,6 +141,16 @@ def simulate_tilopay(amount: str, description: str, db: Session = Depends(databa
         current_user.subscription_status = "Activo"
         
     db.commit()
+    
+    if current_user.email:
+        background_tasks.add_task(
+            email_service.send_payment_receipt_email,
+            to_email=current_user.email,
+            first_name=current_user.first_name,
+            amount=amount,
+            description=description
+        )
+        
     return {"message": "Pago exitoso simulado", "next_payment_date": current_user.next_payment_date}
 
 @router.post("/report-sinpe")
@@ -170,7 +180,7 @@ async def report_sinpe(amount: str, description: str, file: UploadFile = File(..
     return payment
 
 @router.post("/store-tilopay")
-def simulate_store_tilopay(checkout: schemas.StoreCheckout, db: Session = Depends(database.get_db), current_user: models.User = Depends(get_current_user)):
+def simulate_store_tilopay(checkout: schemas.StoreCheckout, background_tasks: BackgroundTasks, db: Session = Depends(database.get_db), current_user: models.User = Depends(get_current_user)):
     # Deduct stock
     for item in checkout.items:
         product = db.query(models.Product).filter(models.Product.id == item.product_id).first()
@@ -214,6 +224,15 @@ def simulate_store_tilopay(checkout: schemas.StoreCheckout, db: Session = Depend
     )
     db.add(order)
     db.commit()
+    
+    if current_user.email:
+        background_tasks.add_task(
+            email_service.send_payment_receipt_email,
+            to_email=current_user.email,
+            first_name=current_user.first_name,
+            amount=checkout.amount,
+            description=checkout.description
+        )
     
     return {"message": "Compra exitosa", "payment_id": payment.id, "order_id": order.id}
 

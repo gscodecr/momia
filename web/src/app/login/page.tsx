@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 import toast from 'react-hot-toast';
 
@@ -63,16 +64,23 @@ export default function LoginPage() {
             style={{ backgroundColor: 'var(--surface)', color: 'var(--foreground)', border: '1px solid var(--border)' }}
             required
           />
-          <input
-            type="password"
-            placeholder="Contraseña"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="p-3 rounded-lg focus:outline-none"
-            style={{ backgroundColor: 'var(--surface)', color: 'var(--foreground)', border: '1px solid var(--border)' }}
-            autoComplete="current-password"
-            required
-          />
+          <div className="flex flex-col">
+            <input
+              type="password"
+              placeholder="Contraseña"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="p-3 rounded-lg focus:outline-none"
+              style={{ backgroundColor: 'var(--surface)', color: 'var(--foreground)', border: '1px solid var(--border)' }}
+              autoComplete="current-password"
+              required
+            />
+            <div className="text-right mt-1">
+              <Link href="/forgot-password" className="text-xs hover:underline" style={{ color: 'var(--primary)' }}>
+                ¿Olvidaste tu contraseña?
+              </Link>
+            </div>
+          </div>
           <button type="submit" className="btn-primary mt-2">Ingresar</button>
         </form>
         <p className="mt-6 text-center text-sm" style={{ opacity: 0.7 }}>

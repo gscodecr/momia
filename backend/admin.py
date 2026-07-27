@@ -4,6 +4,7 @@ from typing import Any, List
 
 import schemas, models, database
 from auth import get_current_user
+from services.email_service import send_approval_email
 from datetime import datetime, timezone
 import re
 
@@ -219,7 +220,10 @@ def update_user_status(user_id: int, status_data: schemas.UserUpdateStatus, db: 
     if status_data.is_active is not None:
         user.is_active = status_data.is_active
     if status_data.is_approved is not None:
+        was_approved = user.is_approved
         user.is_approved = status_data.is_approved
+        if not was_approved and user.is_approved:
+            send_approval_email(user.email, user.first_name)
         
     db.commit()
     db.refresh(user)
@@ -234,8 +238,13 @@ def approve_user(user_id: int, db: Session = Depends(database.get_db), current_u
     if not user:
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
     
+    was_approved = user.is_approved
     user.is_approved = True
     db.commit()
+    
+    if not was_approved:
+        send_approval_email(user.email, user.first_name)
+        
     return {"message": "Usuario aprobado exitosamente"}
 
 @router.get("/orders", response_model=List[schemas.OrderOut])

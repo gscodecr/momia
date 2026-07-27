@@ -5,7 +5,8 @@ import models, schemas
 from database import get_db
 from auth import get_current_user
 import utils
-
+from fastapi import BackgroundTasks
+from services import email_service
 router = APIRouter(
     prefix="/products",
     tags=["marketplace"]
@@ -44,7 +45,7 @@ async def upload_product_image(file: UploadFile = File(...), current_user: model
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/", response_model=schemas.ProductOut)
-def create_product(product: schemas.ProductCreate, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+def create_product(product: schemas.ProductCreate, background_tasks: BackgroundTasks, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
     # Verify if user is admin
     if current_user.role.name != "admin":
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="No autorizado")
@@ -53,6 +54,17 @@ def create_product(product: schemas.ProductCreate, db: Session = Depends(get_db)
     db.add(new_product)
     db.commit()
     db.refresh(new_product)
+    
+    # Notify all athletes
+    athletes = db.query(models.User).join(models.Role).filter(models.Role.name == "athlete", models.User.is_active == True).all()
+    for athlete in athletes:
+        if athlete.email:
+            background_tasks.add_task(
+                email_service.send_product_notification_email, 
+                to_email=athlete.email, 
+                product_name=new_product.name
+            )
+            
     return new_product
 
 @router.delete("/{product_id}")
