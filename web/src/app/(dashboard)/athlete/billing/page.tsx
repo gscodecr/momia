@@ -24,6 +24,8 @@ export default function AthleteBilling() {
   const [sinpeFile, setSinpeFile] = useState<File | null>(null);
   const [sinpePreview, setSinpePreview] = useState<string | null>(null);
   const [uploadingSinpe, setUploadingSinpe] = useState(false);
+  const [sinpeAmount, setSinpeAmount] = useState('40000');
+  const [sinpeDescription, setSinpeDescription] = useState(`Mensualidad ${new Date().toLocaleString('es-CR', { month: 'long', year: 'numeric' })}`);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -98,10 +100,14 @@ export default function AthleteBilling() {
       toast.error('Selecciona un archivo primero');
       return;
     }
+    if (!sinpeAmount || !sinpeDescription) {
+      toast.error('Completa el monto y concepto del pago');
+      return;
+    }
     
     setUploadingSinpe(true);
-    const amount = "40000"; // Dummy amount
-    const desc = `Mensualidad ${new Date().toLocaleString('es-CR', { month: 'long', year: 'numeric' })}`;
+    const amount = sinpeAmount;
+    const desc = sinpeDescription;
     
     const formData = new FormData();
     formData.append('file', sinpeFile);
@@ -250,9 +256,32 @@ export default function AthleteBilling() {
             /* SINPE/Transferencia Box */
             <div className="glass-card space-y-4">
               <h2 className="text-xl font-bold mb-2">Reportar SINPE / Transf.</h2>
-              <p className="text-sm opacity-70">Sube la imagen o captura de tu comprobante de pago para revisión.</p>
+              <p className="text-sm opacity-70">Sube la imagen o captura de tu comprobante de pago e indica los detalles.</p>
               
-              <div className="relative">
+              <div className="space-y-3">
+                <div>
+                  <label className="text-xs font-bold opacity-70 mb-1 block">CONCEPTO DEL PAGO</label>
+                  <input 
+                    type="text" 
+                    value={sinpeDescription}
+                    onChange={(e) => setSinpeDescription(e.target.value)}
+                    className="w-full bg-black/20 border border-white/10 rounded-lg p-3 text-sm focus:border-[var(--primary)] outline-none transition-colors"
+                    placeholder="Ej. Mensualidad Agosto, Compra de Uniforme..."
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-bold opacity-70 mb-1 block">MONTO (₡)</label>
+                  <input 
+                    type="number" 
+                    value={sinpeAmount}
+                    onChange={(e) => setSinpeAmount(e.target.value)}
+                    className="w-full bg-black/20 border border-white/10 rounded-lg p-3 text-sm focus:border-[var(--primary)] outline-none transition-colors"
+                    placeholder="40000"
+                  />
+                </div>
+              </div>
+
+              <div className="relative mt-2">
                 <input 
                   type="file" 
                   ref={fileInputRef}
