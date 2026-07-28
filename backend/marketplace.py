@@ -5,6 +5,7 @@ import models, schemas
 from database import get_db
 from auth import get_current_user
 import utils
+import unicodedata
 from fastapi import BackgroundTasks
 from services import email_service
 router = APIRouter(
@@ -20,15 +21,26 @@ def get_products(db: Session = Depends(get_db), current_user: models.User = Depe
         return all_products
         
     athlete_profile = db.query(models.AthleteProfile).filter(models.AthleteProfile.user_id == current_user.id).first()
-    user_disciplines = set(athlete_profile.discipline.split(',')) if athlete_profile and athlete_profile.discipline else set()
+    
+    if not athlete_profile or not athlete_profile.discipline:
+        user_disciplines = set()
+    else:
+        user_disciplines = set(
+            ''.join(c for c in unicodedata.normalize('NFD', d.strip().lower()) if unicodedata.category(c) != 'Mn')
+            for d in athlete_profile.discipline.split(',')
+        )
     
     filtered = []
     for p in all_products:
-        if not p.discipline:
+        if not p.discipline or p.discipline.strip() == "":
             filtered.append(p)
         else:
-            p_disciplines = set(p.discipline.split(','))
-            if p_disciplines.intersection(user_disciplines):
+            p_disciplines = set(
+                ''.join(c for c in unicodedata.normalize('NFD', d.strip().lower()) if unicodedata.category(c) != 'Mn')
+                for d in p.discipline.split(',')
+            )
+            # Add to filtered if there's any match OR if they somehow set 'general'
+            if p_disciplines.intersection(user_disciplines) or "general" in p_disciplines:
                 filtered.append(p)
                 
     return filtered
