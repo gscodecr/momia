@@ -163,6 +163,7 @@ class PaymentOut(PaymentBase):
     user_id: int
     status: str
     receipt_url: Optional[str]
+    description: Optional[str] = None
     created_at: datetime
     user: Optional[PaymentUserOut] = None
     
