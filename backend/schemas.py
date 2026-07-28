@@ -171,6 +171,12 @@ class PaymentOut(PaymentBase):
         orm_mode = True
         from_attributes = True
 
+class PaginatedPaymentsOut(BaseModel):
+    items: List[PaymentOut]
+    total: int
+    page: int
+    total_pages: int
+
 class CartItem(BaseModel):
     product_id: int
     quantity: int

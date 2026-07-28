@@ -38,6 +38,12 @@ export default function AdminPayments() {
     return url;
   };
   const [activeTab, setActiveTab] = useState<'PENDING' | 'APPROVED' | 'REJECTED'>('PENDING');
+  
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const limit = 50;
 
   const fetchPayments = async () => {
     const token = localStorage.getItem('token');
@@ -47,14 +53,17 @@ export default function AdminPayments() {
     }
     setLoading(true);
     try {
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8001') + '/payments/all', {
+      const skip = (currentPage - 1) * limit;
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8001'}/payments/all?skip=${skip}&limit=${limit}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
       if (res.ok) {
         const data = await res.json();
-        setPayments(data);
+        setPayments(data.items);
+        setTotalPages(data.total_pages);
+        setTotalItems(data.total);
       }
     } catch (err) {
       toast.error("Error al cargar pagos");
@@ -66,7 +75,7 @@ export default function AdminPayments() {
 
   useEffect(() => {
     fetchPayments();
-  }, [router]);
+  }, [router, currentPage]);
 
   const approvePayment = async (paymentId: number) => {
     const token = localStorage.getItem('token');
@@ -222,6 +231,28 @@ export default function AdminPayments() {
               </div>
             ))
           )}
+        </div>
+      )}
+
+      {!loading && payments.length > 0 && (
+        <div className="flex justify-between items-center mt-6 p-4 bg-zinc-900/50 rounded-xl border border-white/10">
+          <button 
+            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+            disabled={currentPage === 1}
+            className="px-4 py-2 bg-white/10 hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg transition-colors text-sm font-semibold"
+          >
+            Anterior
+          </button>
+          <span className="text-sm opacity-80">
+            Página {currentPage} de {totalPages} ({totalItems} pagos)
+          </span>
+          <button 
+            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+            disabled={currentPage === totalPages}
+            className="px-4 py-2 bg-white/10 hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg transition-colors text-sm font-semibold"
+          >
+            Siguiente
+          </button>
         </div>
       )}
 

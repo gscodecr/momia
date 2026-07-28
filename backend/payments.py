@@ -33,12 +33,26 @@ def submit_manual_payment(payment: schemas.PaymentCreate, db: Session = Depends(
     db.refresh(new_payment)
     return new_payment
 
-@router.get("/all", response_model=List[schemas.PaymentOut])
-def get_all_payments(db: Session = Depends(database.get_db), current_user: models.User = Depends(get_current_user)):
-    """Endpoint para que el Súper Admin vea todos los pagos (pendientes, aprobados, rechazados)"""
+@router.get("/all", response_model=schemas.PaginatedPaymentsOut)
+def get_all_payments(skip: int = 0, limit: int = 50, db: Session = Depends(database.get_db), current_user: models.User = Depends(get_current_user)):
+    """Endpoint para que el Súper Admin vea todos los pagos (pendientes, aprobados, rechazados) con paginación"""
     if current_user.role.name != "admin":
         raise HTTPException(status_code=403, detail="No autorizado")
-    return db.query(models.Payment).order_by(models.Payment.id.desc()).all()
+        
+    query = db.query(models.Payment)
+    total = query.count()
+    payments = query.order_by(models.Payment.id.desc()).offset(skip).limit(limit).all()
+    
+    import math
+    total_pages = math.ceil(total / limit) if limit > 0 else 1
+    page = (skip // limit) + 1 if limit > 0 else 1
+    
+    return {
+        "items": payments,
+        "total": total,
+        "page": page,
+        "total_pages": total_pages
+    }
 
 @router.post("/{payment_id}/approve")
 def approve_payment(payment_id: int, background_tasks: BackgroundTasks, db: Session = Depends(database.get_db), current_user: models.User = Depends(get_current_user)):
@@ -179,15 +193,7 @@ def simulate_tilopay(amount: str, description: str, background_tasks: Background
 
 @router.post("/report-sinpe")
 async def report_sinpe(amount: str, description: str, file: UploadFile = File(...), db: Session = Depends(database.get_db), current_user: models.User = Depends(get_current_user)):
-    os.makedirs("uploads", exist_ok=True)
-    file_extension = os.path.splitext(file.filename)[1]
-    filename = f"receipt_{current_user.id}_{datetime.now().strftime('%Y%m%d%H%M%S')}{file_extension}"
-    file_path = f"uploads/{filename}"
-    
-    with open(file_path, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
-        
-    url = f"/uploads/{filename}"
+    url = utils.optimize_and_save_image(file, dest_folder="uploads/receipts")
     
     payment = models.Payment(
         user_id=current_user.id,
@@ -290,15 +296,7 @@ async def store_sinpe(amount: str = Form(...), description: str = Form(...), ite
                     product.stock = max(0, product.stock - qty)
             else:
                 product.stock = max(0, product.stock - qty)
-    os.makedirs("uploads", exist_ok=True)
-    file_extension = os.path.splitext(file.filename)[1]
-    filename = f"store_receipt_{current_user.id}_{datetime.now().strftime('%Y%m%d%H%M%S')}{file_extension}"
-    file_path = f"uploads/{filename}"
-    
-    with open(file_path, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
-        
-    url = f"/uploads/{filename}"
+    url = utils.optimize_and_save_image(file, dest_folder="uploads/store_receipts")
     
     payment = models.Payment(
         user_id=current_user.id,
