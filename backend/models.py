@@ -12,6 +12,14 @@ class Role(Base):
     
     users = relationship("User", back_populates="role")
 
+class BusinessSettings(Base):
+    __tablename__ = "business_settings"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    key = Column(String, unique=True, index=True)
+    value = Column(String)
+    description = Column(String, nullable=True)
+
 class User(Base):
     __tablename__ = "users"
 

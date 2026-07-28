@@ -34,12 +34,21 @@ export default function ProfileScreen() {
   const [sinpeFile, setSinpeFile] = useState<any>(null);
   const [uploadingSinpe, setUploadingSinpe] = useState(false);
   const [loadingAutoPay, setLoadingAutoPay] = useState(false);
+  const [settings, setSettings] = useState<any>({});
 
   useFocusEffect(
     useCallback(() => {
       fetchBilling();
+      fetchSettings();
     }, [])
   );
+
+  const fetchSettings = async () => {
+    try {
+      const res = await api.get('/settings/');
+      if (res.data) setSettings(res.data);
+    } catch (e) {}
+  };
 
   const fetchBilling = async () => {
     try {
@@ -570,7 +579,7 @@ export default function ProfileScreen() {
           ) : (
             <View style={[styles.formGroup, {backgroundColor: 'rgba(255,255,255,0.02)', padding: 16, borderRadius: 12}]}>
               <Text style={{color: '#fff', fontSize: 16, fontWeight: 'bold', marginBottom: 4}}>Reportar SINPE / Transf.</Text>
-              <Text style={{color: '#888', marginBottom: 16}}>Sube la imagen de tu comprobante de pago para revisión.</Text>
+              <Text style={{color: '#888', marginBottom: 16, lineHeight: 22}}>Por favor realiza el pago y adjunta el comprobante a continuación.{"\n"}• SINPE Móvil: {settings.sinpe_phone?.value || '8888-8888'}{"\n"}• Cuenta IBAN: {settings.bank_account?.value || 'CR120152010010XXXXXXX'}</Text>
               
               <TouchableOpacity style={[styles.selectBtn, {height: 80, justifyContent: 'center', marginBottom: 16, borderWidth: 1, borderStyle: 'dashed', borderColor: '#444'}]} onPress={handleSinpePick}>
                 <Ionicons name={sinpeFile ? "image" : "cloud-upload-outline"} size={24} color={sinpeFile ? "#00b4d8" : "#888"} />

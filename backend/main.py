@@ -16,6 +16,7 @@ from events import router as events_router
 from workouts import router as workouts_router
 from routers.notifications import router as notifications_router
 from routers.network import router as network_router
+from routers.settings import router as settings_router
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -49,6 +50,19 @@ def init_db():
                 )
                 db.add(admin_user)
                 db.commit()
+
+        # Seed default business settings
+        default_settings = {
+            "sinpe_phone": {"value": "8888-8888", "description": "Teléfono para pagos por SINPE"},
+            "bank_account": {"value": "CR120152010010XXXXXXX", "description": "Cuenta Bancaria IBAN para transferencias"},
+            "contact_email": {"value": "info@momiats.com", "description": "Correo de contacto"},
+            "contact_phone": {"value": "8888-8888", "description": "Teléfono de contacto o WhatsApp"}
+        }
+        for key, data in default_settings.items():
+            if not db.query(models.BusinessSettings).filter(models.BusinessSettings.key == key).first():
+                db.add(models.BusinessSettings(key=key, value=data["value"], description=data["description"]))
+        db.commit()
+
     finally:
         db.close()
 
@@ -82,6 +96,7 @@ app.include_router(events_router)
 app.include_router(workouts_router)
 app.include_router(notifications_router)
 app.include_router(network_router)
+app.include_router(settings_router)
 
 @app.get("/")
 def read_root():

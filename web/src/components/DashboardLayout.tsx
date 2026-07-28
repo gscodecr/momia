@@ -1,7 +1,8 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { Home, Users, CreditCard, LayoutDashboard, Calendar, ShoppingBag, Bell, MessageCircle, Menu, X, LogOut, Activity, Globe } from 'lucide-react';
+import { Home, Users, CreditCard, LayoutDashboard, Calendar, ShoppingBag, Bell, MessageCircle, Menu, X, LogOut, Activity, Globe, Settings as SettingsIcon } from 'lucide-react';
+import ConfigModal from '@/components/ConfigModal';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -16,6 +17,7 @@ export default function DashboardLayout({ children }: LayoutProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
   const [notifications, setNotifications] = useState<any[]>([]);
   const profileMenuRef = useRef<HTMLDivElement>(null);
   const notifMenuRef = useRef<HTMLDivElement>(null);
@@ -210,6 +212,16 @@ export default function DashboardLayout({ children }: LayoutProps) {
       </button>
       <div className="flex-1"></div>
       <div className="flex items-center gap-4 relative">
+        {role === 'admin' && (
+          <button 
+            onClick={() => setIsConfigModalOpen(true)}
+            className="p-2 rounded-full hover:bg-white/5 transition-colors"
+            title="Configuración Global"
+          >
+            <SettingsIcon size={20} />
+          </button>
+        )}
+        
         {/* Notifications */}
         <div className="relative" ref={notifMenuRef}>
           <button 
@@ -305,6 +317,9 @@ export default function DashboardLayout({ children }: LayoutProps) {
       {/* Mobile Overlay */}
       {isMobileMenuOpen && (
         <div className="fixed inset-0 bg-black/50 z-40 md:hidden" onClick={() => setIsMobileMenuOpen(false)} />
+      )}
+      {isConfigModalOpen && (
+        <ConfigModal onClose={() => setIsConfigModalOpen(false)} />
       )}
     </div>
   );

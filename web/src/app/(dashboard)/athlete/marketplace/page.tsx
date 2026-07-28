@@ -23,10 +23,21 @@ export default function AthleteMarketplace() {
   const [paymentMethod, setPaymentMethod] = useState(''); // 'TILOPAY' or 'SINPE'
   const [sinpeFile, setSinpeFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [settings, setSettings] = useState<any>({});
 
   useEffect(() => {
     fetchProducts();
+    fetchSettings();
   }, []);
+
+  const fetchSettings = async () => {
+    try {
+      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8001') + '/settings/', {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+      if (res.ok) setSettings(await res.json());
+    } catch (e) {}
+  };
 
   const fetchProducts = async () => {
     try {
@@ -386,13 +397,17 @@ export default function AthleteMarketplace() {
                     </button>
                     <button onClick={() => setPaymentMethod('SINPE')} className={`p-4 rounded-xl border flex flex-col items-center gap-2 transition-colors ${paymentMethod === 'SINPE' ? 'border-[var(--primary)] bg-[var(--primary)]/10 text-[var(--primary)]' : 'border-white/10 hover:border-white/30'}`}>
                       <span className="font-black text-xl leading-none">S</span>
-                      <span className="font-bold text-sm">SINPE</span>
+                      <span className="font-bold text-sm text-center leading-tight">Sinpe / Transferencia</span>
                     </button>
                   </div>
 
                   {paymentMethod === 'SINPE' && (
                     <div className="space-y-4 mb-8 bg-black/30 p-4 rounded-xl border border-white/5">
-                      <p className="text-sm opacity-80">Por favor realiza el SINPE al <strong className="text-[var(--primary)]">8888-8888</strong> y adjunta el comprobante a continuación:</p>
+                      <p className="text-sm opacity-80">Por favor realiza el pago y adjunta el comprobante a continuación:</p>
+                      <ul className="text-sm list-disc pl-5 opacity-90 space-y-1">
+                        <li><strong>SINPE Móvil:</strong> {settings.sinpe_phone?.value || '8888-8888'}</li>
+                        <li><strong>Cuenta IBAN:</strong> {settings.bank_account?.value || 'CR120152010010XXXXXXX'}</li>
+                      </ul>
                       
                       <div className="border-2 border-dashed border-white/20 rounded-xl p-6 text-center hover:border-[var(--primary)] transition-colors relative">
                         {sinpeFile ? (

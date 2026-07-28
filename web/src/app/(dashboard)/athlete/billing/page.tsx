@@ -27,10 +27,21 @@ export default function AthleteBilling() {
   const [sinpeAmount, setSinpeAmount] = useState('40000');
   const [sinpeDescription, setSinpeDescription] = useState(`Mensualidad ${new Date().toLocaleString('es-CR', { month: 'long', year: 'numeric' })}`);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [settings, setSettings] = useState<any>({});
 
   useEffect(() => {
     fetchBilling();
+    fetchSettings();
   }, []);
+
+  const fetchSettings = async () => {
+    try {
+      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8001') + '/settings/', {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+      if (res.ok) setSettings(await res.json());
+    } catch (e) {}
+  };
 
   const fetchBilling = async () => {
     try {
@@ -257,6 +268,10 @@ export default function AthleteBilling() {
             <div className="glass-card space-y-4">
               <h2 className="text-xl font-bold mb-2">Reportar SINPE / Transf.</h2>
               <p className="text-sm opacity-70">Sube la imagen o captura de tu comprobante de pago e indica los detalles.</p>
+              <ul className="text-sm list-disc pl-5 opacity-90 space-y-1 mb-4 bg-black/20 p-3 rounded border border-white/5">
+                <li><strong>SINPE Móvil:</strong> {settings.sinpe_phone?.value || '8888-8888'}</li>
+                <li><strong>Cuenta IBAN:</strong> {settings.bank_account?.value || 'CR120152010010XXXXXXX'}</li>
+              </ul>
               
               <div className="space-y-3">
                 <div>
