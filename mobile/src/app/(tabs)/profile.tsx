@@ -35,6 +35,8 @@ export default function ProfileScreen() {
   const [uploadingSinpe, setUploadingSinpe] = useState(false);
   const [loadingAutoPay, setLoadingAutoPay] = useState(false);
   const [settings, setSettings] = useState<any>({});
+  const [sinpeAmount, setSinpeAmount] = useState('40000');
+  const [sinpeDescription, setSinpeDescription] = useState(`Mensualidad ${new Date().toLocaleString('es-CR', { month: 'long', year: 'numeric' })}`);
 
   useFocusEffect(
     useCallback(() => {
@@ -102,8 +104,8 @@ export default function ProfileScreen() {
     }
     
     setUploadingSinpe(true);
-    const amount = "40000";
-    const desc = `Mensualidad ${new Date().toLocaleString('es-CR', { month: 'long', year: 'numeric' })}`;
+    const amount = sinpeAmount || "40000";
+    const desc = sinpeDescription || `Mensualidad ${new Date().toLocaleString('es-CR', { month: 'long', year: 'numeric' })}`;
     
     const formData = new FormData();
     const filename = sinpeFile.uri.split('/').pop() || 'comprobante.jpg';
@@ -585,6 +587,25 @@ export default function ProfileScreen() {
                 <Ionicons name={sinpeFile ? "image" : "cloud-upload-outline"} size={24} color={sinpeFile ? "#00b4d8" : "#888"} />
                 <Text style={{color: sinpeFile ? '#00b4d8' : '#888', marginTop: 8}}>{sinpeFile ? 'Comprobante seleccionado' : 'Seleccionar Imagen'}</Text>
               </TouchableOpacity>
+
+              <Text style={{color: '#888', marginBottom: 4, fontSize: 12, fontWeight: 'bold'}}>Concepto del Pago</Text>
+              <TextInput
+                style={[styles.input, {marginBottom: 12}]}
+                value={sinpeDescription}
+                onChangeText={setSinpeDescription}
+                placeholder="Ej. Mensualidad Agosto"
+                placeholderTextColor="#666"
+              />
+
+              <Text style={{color: '#888', marginBottom: 4, fontSize: 12, fontWeight: 'bold'}}>Monto (CRC)</Text>
+              <TextInput
+                style={[styles.input, {marginBottom: 16}]}
+                value={sinpeAmount}
+                onChangeText={setSinpeAmount}
+                keyboardType="numeric"
+                placeholder="40000"
+                placeholderTextColor="#666"
+              />
 
               {sinpeFile && (
                 <TouchableOpacity style={styles.saveBtn} onPress={handleSinpeSubmit} disabled={uploadingSinpe}>
