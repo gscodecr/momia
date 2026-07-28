@@ -50,8 +50,32 @@ def approve_payment(payment_id: int, background_tasks: BackgroundTasks, db: Sess
     payment.status = "APPROVED"
     db.commit()
     
-    # Notify user
     athlete = db.query(models.User).filter(models.User.id == payment.user_id).first()
+    
+    # Check if it's a store order or subscription
+    order = db.query(models.Order).filter(models.Order.payment_id == payment.id).first()
+    if order:
+        order.status = "COMPLETADA"
+        db.commit()
+    elif athlete:
+        # It's a subscription payment
+        if not athlete.next_payment_date:
+            base_date = datetime.now()
+        else:
+            base_date = athlete.next_payment_date
+            
+        sub_type = (athlete.subscription_type or "").lower()
+        months_to_add = 1
+        if "trimestral" in sub_type: months_to_add = 3
+        elif "semestral" in sub_type: months_to_add = 6
+        elif "anual" in sub_type: months_to_add = 12
+            
+        athlete.next_payment_date = base_date + relativedelta(months=months_to_add)
+        if athlete.subscription_status != "Activo":
+            athlete.subscription_status = "Activo"
+        db.commit()
+
+    # Notify user
     if athlete:
         utils.create_notification(db, user_id=athlete.id, title="Pago Aprobado", message=f"Tu pago por {payment.amount} ha sido aprobado.", notif_type="PAYMENT")
         if athlete.email:
