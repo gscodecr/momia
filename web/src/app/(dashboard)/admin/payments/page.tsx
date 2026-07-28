@@ -12,6 +12,7 @@ interface Payment {
   payment_method: string;
   status: string;
   receipt_url: string;
+  description?: string;
   user?: {
     id: number;
     first_name: string;
