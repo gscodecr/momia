@@ -177,6 +177,13 @@ export default function AdminPayments() {
                       {payment.user.address && <p>📍 {payment.user.address}</p>}
                     </div>
                   )}
+
+                  {payment.description && (
+                    <div className="mb-3 bg-black/20 p-2 rounded border border-white/5 inline-block">
+                      <span className="text-xs opacity-60 uppercase font-bold tracking-wider mr-2">Concepto:</span>
+                      <span className="text-sm font-semibold">{payment.description}</span>
+                    </div>
+                  )}
                   
                   <div className="flex items-center gap-4">
                     <p className="text-2xl font-black text-[var(--primary)]">{payment.amount} {payment.currency}</p>
