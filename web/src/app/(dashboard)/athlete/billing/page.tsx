@@ -7,6 +7,14 @@ import LogoLoader from '@/components/LogoLoader';
 export default function AthleteBilling() {
   const [billingInfo, setBillingInfo] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+
+  const resolveUrl = (url: string) => {
+    if (!url) return '';
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8001';
+    if (url.startsWith('http://127.0.0.1:8001')) return url.replace('http://127.0.0.1:8001', apiUrl);
+    if (url.startsWith('/')) return `${apiUrl}${url}`;
+    return url;
+  };
   
   // TiloPay state
   const [autoPay, setAutoPay] = useState(false);
@@ -190,7 +198,7 @@ export default function AthleteBilling() {
                   <div className="flex items-center gap-4">
                     <span className="font-bold">₡{Number(payment.amount).toLocaleString('es-CR')}</span>
                     {payment.receipt_url && (
-                      <a href={payment.receipt_url} target="_blank" rel="noreferrer" className="p-2 opacity-60 hover:opacity-100 hover:text-[var(--primary)] transition-colors">
+                      <a href={resolveUrl(payment.receipt_url)} target="_blank" rel="noreferrer" className="p-2 opacity-60 hover:opacity-100 hover:text-[var(--primary)] transition-colors">
                         <Download size={18} />
                       </a>
                     )}

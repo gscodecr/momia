@@ -163,7 +163,7 @@ async def report_sinpe(amount: str, description: str, file: UploadFile = File(..
     with open(file_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
         
-    url = f"http://127.0.0.1:8001/uploads/{filename}"
+    url = f"/uploads/{filename}"
     
     payment = models.Payment(
         user_id=current_user.id,
@@ -274,7 +274,7 @@ async def store_sinpe(amount: str = Form(...), description: str = Form(...), ite
     with open(file_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
         
-    url = f"http://127.0.0.1:8001/uploads/{filename}"
+    url = f"/uploads/{filename}"
     
     payment = models.Payment(
         user_id=current_user.id,

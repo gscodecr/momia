@@ -1,44 +1,34 @@
-import React, { useState, useContext } from 'react';
+import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, Image } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
-import { AuthContext } from '../context/AuthContext';
+import { useRouter } from 'expo-router';
 import { Theme } from '../constants/theme';
 import api from '../services/api';
-import { useRouter } from 'expo-router';
 
-export default function LoginScreen() {
+export default function ForgotPasswordScreen() {
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
+  const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
   
-  const { login } = useContext(AuthContext);
+  const router = useRouter();
 
-  const handleLogin = async () => {
+  const handleReset = async () => {
+    if (!email) {
+      setError('Por favor ingresa tu correo.');
+      return;
+    }
     setError('');
+    setMessage('');
     setLoading(true);
+    
     try {
-      const formData = new URLSearchParams();
-      formData.append('username', email);
-      formData.append('password', password);
-
-      const response = await api.post('/auth/login', formData.toString(), {
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
-      });
-      
-      const { access_token } = response.data;
-      
-      const meResponse = await api.get('/auth/me', {
-        headers: { Authorization: `Bearer ${access_token}` }
-      });
-      
-      await login(access_token, meResponse.data);
-      
+      const response = await api.post('/auth/forgot-password', { email });
+      setMessage(response.data.message || 'Si el correo existe, recibirás instrucciones.');
     } catch (err: any) {
       console.log(err);
-      setError('Credenciales inválidas o error de conexión');
+      setError('Ocurrió un error al procesar tu solicitud.');
     } finally {
       setLoading(false);
     }
@@ -53,10 +43,11 @@ export default function LoginScreen() {
       <Image source={require('../../assets/images/logo.png')} style={styles.radialGlow} resizeMode="contain" />
 
       <BlurView intensity={30} tint="dark" style={styles.glassCard}>
-        <Image source={require('../../assets/images/logo.png')} style={styles.logo} resizeMode="contain" />
-        <Text style={styles.subtitle}>Inicia sesión para continuar</Text>
+        <Text style={styles.title}>Recuperar Contraseña</Text>
+        <Text style={styles.subtitle}>Ingresa tu correo para recibir las instrucciones.</Text>
         
         {error ? <Text style={styles.error}>{error}</Text> : null}
+        {message ? <Text style={styles.success}>{message}</Text> : null}
         
         <TextInput
           style={styles.input}
@@ -68,21 +59,12 @@ export default function LoginScreen() {
           keyboardType="email-address"
         />
         
-        <TextInput
-          style={styles.input}
-          placeholder="Contraseña"
-          placeholderTextColor="rgba(255,255,255,0.4)"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-        />
-        
-        <TouchableOpacity style={styles.button} onPress={handleLogin} disabled={loading}>
-          {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Entrar</Text>}
+        <TouchableOpacity style={styles.button} onPress={handleReset} disabled={loading}>
+          {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Enviar correo</Text>}
         </TouchableOpacity>
         
-        <TouchableOpacity style={styles.forgotPassword} onPress={() => router.push('/forgot-password')}>
-          <Text style={styles.forgotPasswordText}>¿Olvidaste tu contraseña?</Text>
+        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+          <Text style={styles.backButtonText}>Volver a Iniciar Sesión</Text>
         </TouchableOpacity>
       </BlurView>
     </View>
@@ -112,10 +94,12 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     backgroundColor: Theme.colors.glassBg,
   },
-  logo: {
-    width: '100%',
-    height: 80,
-    marginBottom: Theme.spacing.md,
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: Theme.colors.foreground,
+    textAlign: 'center',
+    marginBottom: Theme.spacing.xs,
   },
   subtitle: {
     fontSize: 14,
@@ -123,7 +107,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     opacity: 0.7,
     marginBottom: Theme.spacing.xl,
-    marginTop: Theme.spacing.xs,
   },
   input: {
     backgroundColor: 'rgba(0,0,0,0.3)',
@@ -157,13 +140,19 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 14,
   },
-  forgotPassword: {
+  success: {
+    color: Theme.colors.success,
+    marginBottom: Theme.spacing.md,
+    textAlign: 'center',
+    fontSize: 14,
+  },
+  backButton: {
     marginTop: Theme.spacing.lg,
     alignItems: 'center',
   },
-  forgotPasswordText: {
-    color: Theme.colors.primary,
+  backButtonText: {
+    color: Theme.colors.foreground,
+    opacity: 0.7,
     fontSize: 14,
-    fontWeight: 'bold',
   }
 });

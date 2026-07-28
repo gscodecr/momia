@@ -28,6 +28,14 @@ export default function AdminPayments() {
   const [payments, setPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedReceipt, setSelectedReceipt] = useState<string | null>(null);
+
+  const resolveUrl = (url: string) => {
+    if (!url) return '';
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8001';
+    if (url.startsWith('http://127.0.0.1:8001')) return url.replace('http://127.0.0.1:8001', apiUrl);
+    if (url.startsWith('/')) return `${apiUrl}${url}`;
+    return url;
+  };
   const [activeTab, setActiveTab] = useState<'PENDING' | 'APPROVED' | 'REJECTED'>('PENDING');
 
   const fetchPayments = async () => {
@@ -217,13 +225,13 @@ export default function AdminPayments() {
             </button>
             <div className="bg-zinc-900 rounded-xl overflow-hidden border border-white/10 flex items-center justify-center min-w-[300px] min-h-[300px]">
               {selectedReceipt.match(/\.(jpeg|jpg|gif|png|webp)$/i) ? (
-                <img src={selectedReceipt} alt="Comprobante" className="max-w-full max-h-[85vh] object-contain" />
+                <img src={resolveUrl(selectedReceipt)} alt="Comprobante" className="max-w-full max-h-[85vh] object-contain" />
               ) : selectedReceipt.match(/\.pdf$/i) ? (
-                <iframe src={selectedReceipt} className="w-[80vw] max-w-4xl h-[85vh]" />
+                <iframe src={resolveUrl(selectedReceipt)} className="w-[80vw] max-w-4xl h-[85vh]" />
               ) : (
                 <div className="p-8 text-center">
                   <p className="mb-4">No se puede previsualizar este tipo de archivo.</p>
-                  <a href={selectedReceipt} target="_blank" rel="noopener noreferrer" className="btn-primary inline-block">Descargar o Abrir Archivo</a>
+                  <a href={resolveUrl(selectedReceipt)} target="_blank" rel="noopener noreferrer" className="btn-primary inline-block">Descargar o Abrir Archivo</a>
                 </div>
               )}
             </div>
